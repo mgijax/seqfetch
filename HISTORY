@@ -1,3 +1,28 @@
+TAG: seq_fetch-1-0-3
+DATE: 02/04/2004
+STAFF: blk
+RELEASE: Alpha
+CHANGES:
+1) Added functionality to print out elapsed time between steps in program
+   when debug parameter set when calling tofasta.cgi.  The functionality
+   was added to lib/python/tofasta.py and lib/python/gcglib.py .
+2) Made entire tool run about 10 seconds faster by changing how files are
+   transferred from the remote GCG server in lib/python/gcglib.py.  The
+   old getToFASTAOutput and getGCGOutput functions would using UNIX cat
+   to get the contents of the files and then remove any files from the
+   remote GCG server (getToFASTAOutput removed two files, getGCGOutput
+   removed one file).  Each of these UNIX commands (either two or three of
+   them) were executed as separate rsh commands that required separate
+   logins to the remote GCG server.  Given that the GCG environment must
+   initialize at each login, this design was very inefficient.  The new
+   getGCGOutput function replaces the old getToFASTAOutput and getGCGOutput
+   functions and uses FTP to retrieve the contents of the files.  The
+   only functionality the new getGCGOutput function does not do is to 
+   remove the files from the remote GCG server.  We decided to do this
+   by some cron process independent of this application.
+3) Added the function printString to lib/python/gcglib.py to be used as
+   a callback function when using ftplib in the getGCGOutput function.
+   This also required the introduction of the global variable, contents.
 TAG: seq_fetch-1-0-2
 DATE: 01/21/2004
 STAFF: blk
