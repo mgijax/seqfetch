@@ -108,10 +108,13 @@ def getSequences (
 
             outputfile = tempfile.mktemp()
 
+            fileFormat = config.lookup('NIB_FILE_FORMAT')
+            fileName   = fileFormat % chromosome
+
             cmd = config.lookup('NIBFRAGDIR') + "/nibFrag " +\
                 config.lookup('NIBDBS') +\
-                "/%s.fa.nib %s %s %s %s" %\
-                (chromosome,begin,stop,strand,outputfile)
+                "/%s %s %s %s %s" %\
+                (fileName,begin,stop,strand,outputfile)
 
             stdout,stderr,exitcode = runCommand.runCommand(cmd, {})
 
