@@ -37,7 +37,6 @@ import regsub
 import regex
 import sys
 
-#sys.path.insert(0,'/home/blk/public_html/yank/lib/python')
 import CGI
 
 from types import *
