@@ -9,8 +9,8 @@
 # Public Functions:
 #    None
 # Private Functions:
-#    parseParameters(params)
-#       separateInputFile(upfile)
+#    parseParameters(params,profiler)
+#    separateInputFile(upfile)
 # Public Classes:
 #    ToFASTACGI
 # Sample Usage:
@@ -37,7 +37,7 @@ import regsub
 import regex
 import sys
 
-sys.path.insert(0,'/home/blk/public_html/yank/lib/python')
+#sys.path.insert(0,'/home/blk/public_html/yank/lib/python')
 import CGI
 
 from types import *
@@ -51,6 +51,10 @@ import seqlib
 import gcglib
 import genomelib
 import tofastalib
+
+# Profiler library
+
+import Profiler
 
 ###########################################
 # exception values when 'error' is raised #
@@ -89,15 +93,23 @@ class ToFASTACGI (CGI.CGI):
         #    write the result back to the user.
         # Throws: nothing
 
+        # Instantiate Profiler class to track time different steps take.
+        profiler = Profiler.Profiler()
 
         parms = self.get_parms()
+
+        # Stamp time
+        profiler.stamp('After self.get_parms')
 
         try:
             # The call to parseParameters() may raise the 'error'
             # exception.  We catch it below and display its
             # accompanying message for the user.
 
-            sequence = parseParameters (parms)
+            sequence,profiler,debug = parseParameters (parms,profiler)
+
+            # Stamp time
+            profiler.stamp('After parseParameters')
 
             # If we got this far, then go ahead and mark up the
             # blast results...
@@ -131,6 +143,10 @@ class ToFASTACGI (CGI.CGI):
         for line in output:
             print line
 
+        # If in debug mode, then write elapsed time profile.
+        if debug == '1':
+            profiler.write()
+
         # Write activity to usage log
         tofastalib.writeToUsageLog(config.lookup('USAGE_LOG'))
 
@@ -139,15 +155,16 @@ class ToFASTACGI (CGI.CGI):
 ###--- Private Functions ---###
 
 def parseParameters (
-    parms        # dictionary of parameters received from an HTML form,
-                 # as returned by CGI.get_parms()
+    parms,        # Dictionary of parameters received from an HTML form,
+                  # as returned by CGI.get_parms().
+    profiler      # Profiler object to track elapsed time.
     ):
     # Purpose: parse the given set of 'parms' to get and return a tuple
     #    of ten items.  performs error checking to ensure complete and
     #    consistent input.
-    # Returns: tuple containing ten items -- (BlastRcd, DatabaseRcd,
-    #    sequence, v, b, MaskerRcd, seg, xnu, id, id_db) -- see below
-    #    for descriptions of each
+    # Returns: 1. sequence
+    #          2. profilter object
+    #          3. debug variable
     # Assumes: nothing
     # Effects: nothing
     # Throws: 'error' if any problems with the parameters are found
@@ -171,6 +188,7 @@ def parseParameters (
     genomesequence = ''
     gcgsequence = ''
     sequence = ''
+    debug = ''
 
     # check the parameters for error conditions and raise an exception
     # if any are found
@@ -285,11 +303,17 @@ Please specify the sequence you wish to retrieve by only one method.'''
 
     failedmessage = ''
 
+    # Stamp time
+    profiler.stamp('Before call to genomelib.getSequences')
+
     # Retrieve Genome Build Sequences
     try:
         if genomeupfile != '':
             genomesequence,failedgenomeseqs = \
                 genomelib.getSequences (genomeupfile,config)
+
+            # Stamp time
+            profiler.stamp('After call to genomelib.getSequences')
 
             if failedgenomeseqs != '':
                 failedmessage = "Sequence Retrieval Tool Failed " + \
@@ -305,12 +329,23 @@ Please specify the sequence you wish to retrieve by only one method.'''
              # Translate the upfile into a properly formatted GCG list file
              gcglistfile = gcglib.generateGCGListFile(gcgupfile)
 
+             # Stamp time
+             profiler.stamp('After call to gcglib.generateGCGListFile')
+
              # Check to see if any sequences have been split by GCG
-             checkedlistfile = gcglib.checkSeqs(gcglistfile,config)
+             checkedlistfile,profiler = \
+                 gcglib.checkSeqs(gcglistfile,config,profiler)
+
+             # Stamp time
+             profiler.stamp('After call to gcglib.checkSeqs')
 
              # Run ToFASTA
-             gcgsequence,failedgcgseqs = \
-                 gcglib.getSequences (checkedlistfile,gcglistfile,config)
+             gcgsequence,failedgcgseqs,profiler = \
+                 gcglib.getSequences (checkedlistfile,gcglistfile,\
+                 config,profiler)
+
+             # Stamp time
+             profiler.stamp('After call to gcglib.getSequences')
 
              if failedgcgseqs != '\n':
                 failedmessage = failedmessage + \
@@ -326,7 +361,7 @@ Please specify the sequence you wish to retrieve by only one method.'''
     if failedmessage != '':
         print "*****\n" + failedmessage + "*****\n"
 
-    return sequence
+    return sequence,profiler,debug
 
 
 def separateInputFile(upfile):
