@@ -551,7 +551,7 @@ def seqReader(loopseq,config):
 
         if lastindex > -1:
             # Store previous sequence in buffer
-            buffer = loopseq[:lastindex-1]
+            buffer = string.rstrip(loopseq[:lastindex])
 
             # Reset loopseq so it doesn't include previous sequence
             loopseq = loopseq[lastindex:]
@@ -634,8 +634,7 @@ def seqReader(loopseq,config):
         else:
 
             # Store previous sequence in buffer
-            buffer = loopseq[:string.find(loopseq,\
-                '                     Welcome to the WISCONSIN PACKAGE')-1]
+            buffer = loopseq
 
             loopseq = ''
 
@@ -903,7 +902,6 @@ def mergeListFiles(nameslistfile,listfile):
                     for id in keys:
                         newgcgnamesseqids.append(id)
                 else:
-#                    raise error, 'Sequence %s not found' % seqid
                     missingseqs.append(seqid)
 
     gcgnamesseqids = newgcgnamesseqids
