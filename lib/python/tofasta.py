@@ -37,7 +37,6 @@ import regsub
 import regex
 import sys
 
-import CGI
 
 from types import *
 
@@ -47,6 +46,7 @@ import seqlib
 
 # Sequence Retrieval Tool library
 
+import CGInocontenttype
 import gcglib
 import genomelib
 import tofastalib
@@ -72,7 +72,7 @@ correctly to the BLAST program.'''
 # classes   #
 #############
 
-class ToFASTACGI (CGI.CGI):
+class ToFASTACGI (CGInocontenttype.CGI):
     # IS: the ToFASTA CGI script
     # HAS: a set of parameters from an HTML form, including:  id,
     #    id_db.
@@ -137,7 +137,6 @@ class ToFASTACGI (CGI.CGI):
             # catch.
 
             tofastalib.writeToErrorLog (message,config)
-
 
         for line in output:
             print line
