@@ -49,13 +49,13 @@ OVERLAP_LENGTH	10000
 GCG_SERVER  grendel.jax.org
 
 # Account name on GCG server
-GCG_ACCOUNT mgiuser
+GCG_ACCOUNT mgiusr
 
 # Password on GCG server
-GCG_PASS hellian
+GCG_PASS hell1an
 
 # Directory for temporary files on GCG server
-GCG_TEMP_DIR  /home/mgiuser/seqdir
+GCG_TEMP_DIR  /home/mgiusr/seqdir
 
 # Directory for temporary files on local server running CGI
 LOCAL_TEMP_DIR /usr/tmp
@@ -66,6 +66,6 @@ NIBFRAGDIR /home/blk/BLAT
 # Directory for .nib chromosome files
 # (files need to be named like '1.fa.nib' where
 # '1' is the chromosome number)
-NIBDBS /net/hobbiton/data/downloads/ftp.ensembl.org/mouse_build_32_nib
+NIBDBS /net/hobbiton/data/downloads/ftp.ensembl.org/mouse_build_30_nib
 
 
