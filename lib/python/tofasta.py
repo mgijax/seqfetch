@@ -30,6 +30,7 @@ config = Configuration.get_Configuration ('Configuration', 1)
 
 # Python libraries
 
+import types
 import os
 import time
 import string
@@ -99,6 +100,11 @@ class ToFASTACGI (CGInocontenttype.CGI):
         debug = '0'
 
         parms = self.get_parms()
+
+        if debug != '0':
+            print "Input Parms"
+            print parms
+            print " "
 
         # Stamp time
         profiler.stamp('After self.get_parms')
@@ -190,6 +196,9 @@ def parseParameters (
     sequence = ''
     debug = ''
 
+    # clean the input parameters to ensure correct naming of seq parms
+    parms = cleanInputParms(parms)
+
     # check the parameters for error conditions and raise an exception
     # if any are found
 
@@ -237,8 +246,9 @@ Please specify the sequence you wish to retrieve by only one method.'''
 
                 except:
                     raise ToFASTACGI.error, 'One of the requested sequences %s was not specified properly.  Please resubmit your search.' % seqitem
+
                 if flank == '':
-                    flank = 0
+                    flank = '0'
                 if strand == '1':
                     strand = '+'
                 elif strand == '0':
@@ -251,14 +261,21 @@ Please specify the sequence you wish to retrieve by only one method.'''
                 if chromo != '' and id_db == 'mousegenome':
                      id = chromo
 
+                # Subtracting 1 from start coordinate.  This is done because
+                # of a bug in nigFrag not picking up the first bp
+                if begin != '' and begin != '1':
+                    origionalBegin = begin
+                    newBegin = string.atoi(begin) -1
+                    begin = '%s' % newBegin
+
                 id_db = mapToLogicalDB(id_db)
                 if begin != '' and coorend != '':
                     upfile = upfile + "%s\t%s\t%s\t%s\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank)-1,\
+                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
                         string.atoi(coorend)+string.atoi(flank),strand)
                 elif begin != '' and coorend == '':
                     upfile = upfile + "%s\t%s\t%s\t\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank)-1,\
+                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
                         strand)
                 elif begin == '' and coorend != '':
                     upfile = upfile + "%s\t%s\t\t%s\t%s\n" % \
@@ -266,43 +283,6 @@ Please specify the sequence you wish to retrieve by only one method.'''
                         strand)
                 else:
                     upfile = upfile + "%s\t%s\t\t\t%s\n" % (id_db,id,strand)
-
-        else:
-            try:
-
-                # Sept 29, 04
-                # Added chromo input parameter
-                [id_db,id,chromo,begin,coorend,strand,flank] = string.split(seqs,'!')
-                if flank == '':
-                    flank = 0
-                if strand == '1':
-                    strand = '+'
-                elif strand == '0':
-                    strand = '-'
-                elif strand != '+' and strand != '-' :
-                    strand = '+'
-
-                # Sept 29, 04
-                # Added to support additional SRT parameter
-                if chromo != '' and id_db == 'mousegenome':
-                     id = chromo
-
-                id_db = mapToLogicalDB(id_db)
-                if begin != '' and coorend != '':
-                    upfile = "%s\t%s\t%s\t%s\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank)-1,\
-                        string.atoi(coorend)+string.atoi(flank),strand)
-                elif begin != '' and coorend == '':
-                    upfile = "%s\t%s\t%s\t\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank)-1,strand)
-                elif begin == '' and coorend != '':
-                    upfile = "%s\t%s\t\t%s\t%s\n" % \
-                        (id_db,id,string.atoi(coorend)+string.atoi(flank),strand)
-                else:
-                    upfile = "%s\t%s\t\t\t%s\n" % (id_db,id,strand)
-
-            except:
-                raise ToFASTACGI.error, 'Incorrect usage. Be sure to include proper number of fields to identify a sequence and correct number of delimiters.'                
 
     # process upfile to assign values
     if parms.has_key ('upfile') and upfile == '':
@@ -355,13 +335,16 @@ Please specify the sequence you wish to retrieve by only one method.'''
 
             if failedgenomeseqs != '':
                 failedseqmsg = "Chr:%s  Begin:%s  End:%s  Flank:%s\n" \
+                    "Consider reducing the flanking sequence.\n" \
                     % (chromo,begin,coorend,flank)
                 failedgenomemessage = "The Sequence Retrieval Tool failed " + \
                     "to find this genome sequence:\n%s" % failedseqmsg
+
+            # Remove full path from display...  
             if config.has_key('GENOMIC_PATH') :
 		genomesequence = regsub.gsub(config['GENOMIC_PATH'],
-				             '',
-					     genomesequence) 
+                    '',genomesequence) 
+
     except:
         raise ToFASTACGI.error, 'Error in retrieving genome build sequences.'
 
@@ -469,4 +452,43 @@ def mapToLogicalDB(id_db):
 
     return id_db
 
+###--------------------------------------------------------------------###
+def cleanInputParms(inputParms):
+# Purpose: Convert multiple APIs to have same input naming convention
+#   Detail page javaScript requires we use more than the 'seqs' parms.
+#   seq(n) is now valid, where n is any number (e.g. seq1, seq2, seq3)
+# Returns: dictionary; like self parms, with seq(n) values now in
+#   the seqs parameter 
+# Assumes: Nothing
+# Effects: Nothing
+# Throws:  Nothing
+
+    seqList = []
+    upfile  = ''
+
+    cgiKeys = inputParms.keys()
+
+    reg = regex.compile('seq[0-9s]+')
+
+    for key in cgiKeys :
+
+        if reg.match(key) != -1 :
+                
+            if type(inputParms[key]) == types.StringType:
+                parmValueList = [inputParms[key]]
+
+            else:
+                parmValueList = inputParms[key]
+                
+            for parmValue in parmValueList:
+                seqList.append(parmValue)
+
+        if key == "upfile":
+            upfile = inputParms[key]
+
+    newInputParms = {}
+    newInputParms['seqs'] = seqList
+    newInputParms['upfile'] = upfile
+
+    return newInputParms
 
