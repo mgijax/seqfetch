@@ -3,10 +3,12 @@ DATE: 02/04/2004
 STAFF: blk
 RELEASE: Alpha
 CHANGES:
-1) Added functionality to print out elapsed time between steps in program
+1) Added lib/python/Profiler.py to track elapsed time between steps in
+   application.
+2) Added functionality to print out elapsed time between steps in program
    when debug parameter set when calling tofasta.cgi.  The functionality
    was added to lib/python/tofasta.py and lib/python/gcglib.py .
-2) Made entire tool run about 10 seconds faster by changing how files are
+3) Made entire tool run about 10 seconds faster by changing how files are
    transferred from the remote GCG server in lib/python/gcglib.py.  The
    old getToFASTAOutput and getGCGOutput functions would using UNIX cat
    to get the contents of the files and then remove any files from the
@@ -20,7 +22,7 @@ CHANGES:
    only functionality the new getGCGOutput function does not do is to 
    remove the files from the remote GCG server.  We decided to do this
    by some cron process independent of this application.
-3) Added the function printString to lib/python/gcglib.py to be used as
+4) Added the function printString to lib/python/gcglib.py to be used as
    a callback function when using ftplib in the getGCGOutput function.
    This also required the introduction of the global variable, contents.
 TAG: seq_fetch-1-0-2
