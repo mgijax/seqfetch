@@ -1,0 +1,75 @@
+<HTML>
+
+<HEAD>
+<TITLE>
+Sequence Retrieval Tool
+</TITLE>
+</HEAD>
+
+
+<BODY BGCOLOR="#FFFFFF">
+<CENTER>
+<IMG SRC="http://www/images/shared/mgi_small_banner.gif"
+ALT="Mouse Genome Informatics">
+<BR>
+</CENTER>
+
+
+<H1 align=center>Sequence Retrieval Tool</H1><P>
+<CENTER><font size="-1">This tool will fetch a sequence or subsequence from GenBank, SWISS-PROT, TrEMBL, TIGR, DoTS, and the NCBI Build 30 Mouse Genome Sequence in FASTA-format.
+</font></CENTER>
+<hr>
+
+<FORM METHOD=POST ACTION="tofasta.cgi" ENCTYPE="multipart/form-data">
+
+<B>SEQUENCE SPECIFICATION:</B><BR>
+<INPUT TYPE="textbox" NAME="seqs" VALUE="genbank!M15131!1!100!+!0" SIZE=80>
+
+<P>
+<H2>OR</H2>
+<P>
+Upload a file of sequences to fetch in a batch (GCG logical \t seqID \t begin \t end):
+<INPUT TYPE="file" NAME="upfile" SIZE=45 />
+<P>
+
+<B>Return Errors:</B>
+<SELECT NAME="returnErrors" SIZE=1>
+<OPTION VALUE="true" SELECTED> true
+<OPTION VALUE="false"> false
+</SELECT>
+
+<P>
+<B>Debug Mode:</B>
+<SELECT NAME="debug" SIZE=1>
+<OPTION VALUE="true"> true
+<OPTION VALUE="false" SELECTED> false
+</SELECT>
+
+
+<P>
+<INPUT TYPE="submit">
+<INPUT TYPE="reset">
+</FORM> 
+
+
+<B>Valid databases:</B>
+<OL>
+<LI>mousegenome - e.g., mousegenome!1!1512345!1512445!+!0
+<LI>genbank - e.g., genbank!M15131!1!100!+!0
+<LI>refseq - e.g., refseq!NM_008361!!!!
+<LI>swissprot - e.g., swissprot!P10749!!!!
+<LI>trembl - e.g., trembl!AAH11437!!!!
+<LI>tigrmgi
+<LI>tigrhgi
+<LI>tigrrgi
+<LI>dots
+</OL>
+
+<P>
+
+<HR>
+
+</BODY>
+
+</HTML>
+

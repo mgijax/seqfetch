@@ -1,0 +1,71 @@
+########################################################################
+# Configuration.defaults - Sample Yank Configuration File              #
+#                                                                      #
+# Copy this file to Configuration and edit before running Install.     #
+#                                                                      #
+#	cp Configuration.defaults Configuration                        #
+#                                                                      #
+# Make sure you run Install any time you edit the Configuration file.  #
+########################################################################
+
+# umask for any files created
+UMASK	026
+
+# UNIX group that the WWW server uses for executing CGI scripts.  Note that
+# the user running Install must be a member of this group (or be root).  See
+# the README.Install file for complete details.
+GROUP		www
+
+# Location of python binary.
+PYTHON		/usr/local/bin/python
+
+# Temporary directory where files are created that contain the
+# query sequence for BLAST, and also where DUST and RepeatMasker
+# read their input files.  Also note that RepeatMasker will make
+# several output files in this directory after it runs.
+TMPDIR         /tmp
+
+# Absolute path to the Yank usage log file
+USAGE_LOG      /home/blk/seq_fetch/logs/seq_fetch_usage.log
+
+# Absolute path to the Yank error log file
+ERROR_LOG      /home/blk/seq_fetch/logs/seq_fetch_error.log
+
+# Run in debug mode? (0/1)
+DEBUG	0
+
+# colon-delimited list of directories containing Python libraries, including
+# the lib/python directory under this installation directory
+LIBDIRS		/usr/local/mgi/lib/python/:/usr/local/mgi/mass/dev/lib/python/:/home/blk/seq_fetch/lib/python/
+
+
+# Line length for FASTA format sequences returned by tool
+LINE_LENGTH	60
+
+# Overlap length for sequences split up by GCG
+OVERLAP_LENGTH	10000
+
+# GCG Server
+GCG_SERVER  grendel.jax.org
+
+# Account name on GCG server
+GCG_ACCOUNT mgiuser
+
+# Password on GCG server
+GCG_PASS hellian
+
+# Directory for temporary files on GCG server
+GCG_TEMP_DIR  /home/mgiuser/seqdir
+
+# Directory for temporary files on local server running CGI
+LOCAL_TEMP_DIR /usr/tmp
+
+# Directory for nibFrag program
+NIBFRAGDIR /home/blk/BLAT
+
+# Directory for .nib chromosome files
+# (files need to be named like '1.fa.nib' where
+# '1' is the chromosome number)
+NIBDBS /net/hobbiton/data/downloads/ftp.ensembl.org/mouse_build_32_nib
+
+

@@ -1,0 +1,267 @@
+#!/bin/sh
+
+# Program: Install
+# Purpose: Install script for the Yank Web Interface
+# Assumptions: that this script is run from the directory which contains it
+#	(the MouseBLAST WI installation directory)
+
+###--- Global Variables ---###
+
+TOP=`pwd`
+INSTALL_LOG=$TOP/logs/Install.log
+USAGE="Usage: $0 <full path to Configuration.py>\n"
+
+###--- Functions ---###
+
+log() {
+	# Purpose: send one or more strings (passed as parameters) to stdout
+	#	and to the log file
+	# Returns: nothing
+	# Assumes: we can write to the log file
+	# Effects: writes to stdout and to the log file
+	# Throws: nothing
+
+	for line in "$@"
+	do
+		echo $line
+		echo $line >> $INSTALL_LOG
+	done
+}
+
+logHeading() {
+	# Purpose: send one or more strings (passed as parameters) out to the
+	#	log as a heading, set off by lines before and after it
+	# Returns: nothing
+	# Assumes: see Assumes of log() function
+	# Effects: see Effects of log() function
+	# Throws: nothing
+
+	log "---------------------------------------------"
+	log "$@"
+	log "---------------------------------------------"
+}
+
+errorExit() {
+	# Purpose: logs one or more strings telling the user about why the
+	#	script failed
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: see the log() function's Effects
+	# Throws: nothing
+	# Notes: We trap signals 1, 2, 3, 12, 13, and 15 so that this function
+	#	is called for many abnormal program terminations.
+
+	log "Failed: "
+	log "$@"		# send all the strings to the log() function
+	exit 1
+}
+trap "errorExit $INSTALL_LOG" 1 2 3 12 13 15
+
+checkDirectory() {
+	# Purpose: checks to see that we are executing this script from the
+	#	directory in which it lives
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: prints a message to stdout and exits the script if we are
+	#	not in the directory containing this script
+	# Throws: nothing
+
+	if [ `dirname $0` != . ]; then
+		filename=`basename $0`
+		errorExit "$filename must be run from same directory."
+	fi
+}
+
+checkGroup() {
+	# Purpose: check to see if the current user is a member of the group
+	#	specified in $1, using the temp directory specified in $2
+	#	to check it
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: logs a message and exits the script if the group test fails
+	# Throws: nothing
+
+	tempfile=$2/tempfile
+	touch $tempfile
+	chgrp $1 $tempfile || errorExit "You are not a member of group $1"
+	rm -f $tempfile
+}
+
+succeeded() {
+	# Purpose: log a final message before the script terminates
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: see log() function's Effects
+	# Throws: nothing
+	# Notes: We trap the signal 0 so that this is always called as the
+	#	script exits.
+
+	log "bye bye..."
+}
+trap "succeeded" 0
+
+execute() {
+	# Purpose: log and then execute the command passed in as parameters
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: depends on the command passed.  If the command fails, then
+	#	we give an error message and terminate the script.
+	# Throws: nothing
+
+	log "$*"
+	$* || errorExit "$*"
+}
+
+makeDir() {
+	# Purpose: make a directory (named in $1) in the current directory,
+	#	if it doesn't already exist
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: creates a directory in the file system, and logs its
+	#	actions.
+	# Throws: nothing
+
+	if [ ! -d $1 ]; then
+		log "Making $1 directory in `pwd`"
+		execute mkdir $1
+	else
+		log "The $1 directory already exists in `pwd`"
+	fi
+}
+
+reLink() {
+	# Purpose: regenerate a symbolic link (named in $2) so that it may
+	#	point to a new target ($1).  If the link doesn't already
+	#	exist, then just create it for the first time.
+	# Returns: nothing
+	# Assumes: we have permissions to create the link
+	# Effects: removes any existing symbolic link named $2 and creates a
+	#	new one
+	# Throws: nothing
+
+	if [ -h $2 ]; then
+		log "Removing old link: $2"
+		execute rm -f $2
+	fi
+	log "Creating new link: $2 -> $1"
+	execute ln -s $1 $2
+}
+
+compilePythonLibs() {
+	# Purpose: compiles all Python libraries in the current directory,
+	#	expecting the path to the Python interpreter in $1
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: removes any existing .pyc files, and creates a new one for
+	#	each .py file in the current directory
+	# Throws: nothing
+
+	for file in `ls *pyc`
+	do
+		log "Removing old file: $file"
+		execute rm -f $file
+	done
+	$1 -c 'import compileall; compileall.compile_dir(".")'
+}
+
+###--- Main Program ---###
+
+if [ -r $INSTALL_LOG ]; then
+	rm $INSTALL_LOG
+fi
+
+logHeading "Beginning Installation" "`date`"
+
+log "Checking command-line..."
+checkDirectory			# ensure that we're running Install in './'
+
+# Check that the user specified the location of the configuration module,
+# that it is executable, and that a Configuration file is readable.
+
+if [ $# -ne 1 ]; then
+	errorExit "$USAGE"
+fi
+if [ "`basename $1`" != "Configuration.py" ]; then
+	errorExit "$USAGE"
+fi
+if [ ! -x $1 ]; then
+	errorExit "$1 is not executable"
+fi
+if [ ! -r Configuration ]; then
+	errorExit "The Configuration file is missing"
+fi
+
+# use the configuration module to parse our Configuration file and import
+# those variables to this script.  Notably, this is where we define:
+#	$PYTHON
+#	$UMASK
+#	$ERROR_LOG
+#	$USAGE_LOG
+#	$GROUP
+#	$HOMEPAGE
+
+logHeading "Getting Configuration options..."
+CONFIG=/tmp/$$.config
+$1 ./Configuration sh > $CONFIG
+. $CONFIG
+rm -f $CONFIG
+
+execute umask $UMASK		# set the proper umask
+checkGroup $GROUP $TMPDIR	# ensure that the user is a member of $GROUP
+
+# Create several directories which may not be part of the source checked out
+# from CVS
+
+logHeading "Creating directories..."
+for dir in ./bin ./www/include ./admin/tmp ./logs
+do
+	cd `dirname $dir`
+	makeDir `basename $dir`
+	cd $TOP
+done
+
+# Create a link to the Python interpreter from the bin/ directory
+
+logHeading "Linking to the Python interpreter..."
+cd bin
+reLink $PYTHON python
+cd $TOP
+
+# Create the usage and error logs if they don't already exist and set them
+# to be world-writeable (so the web server can log to them)
+
+logHeading "Setting up log files..."
+for file in $ERROR_LOG $USAGE_LOG
+do
+	if [ ! -f $file ]; then
+		execute touch $file
+	fi
+	execute chmod a+rw $file
+done
+
+# Create links to the configuration module and to the Python interpreter
+# in directories where we need to run Python scripts.
+
+logHeading "Creating links for Python scripts to use..."
+for dir in admin www
+do
+	cd $dir
+	log "in `pwd`..."
+	reLink $TOP/bin/python python
+	reLink $1c Configuration.pyc
+	cd $TOP
+done
+
+# Compile the Python libraries for this product
+
+logHeading "Compiling the Python libraries..."
+cd lib/python
+compilePythonLibs $PYTHON
+cd $TOP
+
+# Make sure that all files are owned by $GROUP
+
+logHeading "Changing file and directory ownerships..."
+execute find . \( -type f -o -type d \) -exec chgrp $GROUP '{}' \;
+
+logHeading "Installation Successful" "`date`"
