@@ -1,3 +1,10 @@
+TAG: seqfetch-1-0-6
+DATE: 05/03/2004
+STAFF: jsb
+RELEASE: Alpha
+CHANGES:
+1) minor bugfix (specified by Ben) where the last nucleotide was lost
+
 TAG: seqfetch-1-0-5
 DATE: 04/05/2004
 STAFF: blk
