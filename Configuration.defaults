@@ -68,5 +68,8 @@ NIBFRAGDIR /home/blk/BLAT
 # '1' is the chromosome number)
 NIBDBS /net/hobbiton/data/downloads/ftp.ensembl.org/mouse_build_30_nib
 
+# Which part of the NIBDBS not to display to users
+GENOMIC_PATH /net/hobbiton/data/downloads/ftp.ensembl.org/
+
 # Maximum number of sequences that may be retrieved
 MAX_SEQS 1000
