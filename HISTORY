@@ -1,3 +1,11 @@
+TAG: seqfetch-1-0-7
+DATE: 05/11/2004
+STAFF: blk
+RELEASE: Alpha
+CHANGES:
+1) minor bugfix where the last nucleotide was lost
+2) improved error message when no sequences submitted
+
 TAG: seqfetch-1-0-6
 DATE: 05/03/2004
 STAFF: jsb
