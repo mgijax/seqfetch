@@ -1,3 +1,11 @@
+TAG: seqfetch-1-0-5
+DATE: 04/05/2004
+STAFF: blk
+RELEASE: Alpha
+CHANGES:
+1) Fixed bugs in lib/python/tofasta.py and lib/python/gcglib.py .
+2) Enhanced lib/python/tofasta.py and lib/python/gcglib.py to support
+   NIA Mouse Gene Index (niamgi) and DoTS sequences (dotsm).
 TAG: seqfetch-1-0-4
 DATE: 03/02/2004
 STAFF: blk
