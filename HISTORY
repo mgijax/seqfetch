@@ -1,9 +1,9 @@
-TAG: seqfetch-1-0-11
-DATE: 12/13/2004
+TAG: seqfetch-1-0-12
+DATE: 12/14/2004
 STAFF: pf
 RELEASE: beta
 CHANGES:
-1) added new options for calling tofasta CGI script
+1) added new flanking options for calling tofasta CGI script
 
 TAG: seqfetch-1-0-10
 DATE: 12/08/2004
