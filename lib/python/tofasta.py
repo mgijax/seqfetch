@@ -357,10 +357,12 @@ Please specify the sequence you wish to retrieve by only one method.'''
             if failedgenomeseqs != '':
                 failedgenomemessage = "The Sequence Retrieval Tool failed " + \
                     "to find these genome sequences:\n%s" % failedgenomeseqs
-
+            if config.has_key('GENOMIC_PATH') :
+		genomesequence = regsub.gsub(config['GENOMIC_PATH'],
+				             '',
+					     genomesequence) 
     except:
         raise ToFASTACGI.error, 'Error in retrieving genome build sequences.'
-
 
     # Retrieve Non-Genome Build Sequences
     try:
