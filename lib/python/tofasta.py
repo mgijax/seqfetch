@@ -229,8 +229,12 @@ Please specify the sequence you wish to retrieve by only one method.'''
                 raise ToFASTACGI.error, 'Please contact MGI User Support (mgi-help@informatics.jax.org) to retrieve more than %s sequences.' % config.lookup('MAX_SEQS')
             for seqitem in seqs:
                 try:
-                    [id_db,id,begin,coorend,strand,flank] = \
+
+                # Sept 29, 04
+                # Added chromo input parameter
+                    [id_db,id,chromo,begin,coorend,strand,flank] = \
                         string.split(seqitem,'!')
+
                 except:
                     raise ToFASTACGI.error, 'One of the requested sequences %s was not specified properly.  Please resubmit your search.' % seqitem
                 if flank == '':
@@ -241,6 +245,12 @@ Please specify the sequence you wish to retrieve by only one method.'''
                     strand = '-'
                 else:
                     strand = '+'
+
+                # Sept 29, 04
+                # Added to support additional SRT parameter
+                if chromo != '' and id_db == 'mousegenome':
+                     id = chromo
+
                 id_db = mapToLogicalDB(id_db)
                 if begin != '' and coorend != '':
                     upfile = upfile + "%s\t%s\t%s\t%s\t%s\n" % \
@@ -259,7 +269,11 @@ Please specify the sequence you wish to retrieve by only one method.'''
 
         else:
             try:
-                [id_db,id,begin,coorend,strand,flank] = string.split(seqs,'!')
+
+                # Sept 29, 04
+                # Added chromo input parameter
+                [id_db,id,chromo,begin,coorend,strand,flank] = string.split(seqs,'!')
+
                 if flank == '':
                     flank = 0
                 if strand == '1':
@@ -268,6 +282,12 @@ Please specify the sequence you wish to retrieve by only one method.'''
                     strand = '-'
                 else:
                     strand = '+'
+
+                # Sept 29, 04
+                # Added to support additional SRT parameter
+                if chromo != '' and id_db == 'mousegenome':
+                     id = chromo
+
                 id_db = mapToLogicalDB(id_db)
                 if begin != '' and coorend != '':
                     upfile = "%s\t%s\t%s\t%s\t%s\n" % \
