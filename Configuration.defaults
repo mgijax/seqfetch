@@ -61,19 +61,19 @@ GCG_TEMP_DIR  /home/mgiusr/seqdir
 LOCAL_TEMP_DIR /usr/tmp
 
 # Directory for nibFrag program
-NIBFRAGDIR /home/blk/BLAT
+NIBFRAGDIR /usr/local/bin
 
 # Directory for .nib chromosome files
 # (files need to be named like '1.fa.nib' where
 # '1' is the chromosome number)
-NIBDBS /net/hobbiton/data/downloads/ftp.ensembl.org/mouse_build_30_nib
+NIBDBS /net/hobbiton/data/research/dna/mouse_build_33_nib
 
 # Which part of the NIBDBS not to display to users
-GENOMIC_PATH /net/hobbiton/data/downloads/ftp.ensembl.org/
+GENOMIC_PATH /net/hobbiton/data/research/
 
 # Maximum number of sequences that may be retrieved
 MAX_SEQS 1000
 
 # python formatted string representing the file format of the chromosome files
 # The %s is a chromosome number, X, Y, or M 
-NIB_FILE_FORMAT chr%s.fa.nib
+NIB_FILE_FORMAT chr%s.nib
