@@ -245,6 +245,7 @@ Please specify the sequence you wish to retrieve by only one method.'''
                     strand = '-'
                 elif strand != '+' and strand != '-' :
                     strand = '+'
+
                 # Sept 29, 04
                 # Added to support additional SRT parameter
                 if chromo != '' and id_db == 'mousegenome':
@@ -253,11 +254,11 @@ Please specify the sequence you wish to retrieve by only one method.'''
                 id_db = mapToLogicalDB(id_db)
                 if begin != '' and coorend != '':
                     upfile = upfile + "%s\t%s\t%s\t%s\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
+                        (id_db,id,string.atoi(begin)-string.atoi(flank)-1,\
                         string.atoi(coorend)+string.atoi(flank),strand)
                 elif begin != '' and coorend == '':
                     upfile = upfile + "%s\t%s\t%s\t\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
+                        (id_db,id,string.atoi(begin)-string.atoi(flank)-1,\
                         strand)
                 elif begin == '' and coorend != '':
                     upfile = upfile + "%s\t%s\t\t%s\t%s\n" % \
@@ -289,11 +290,11 @@ Please specify the sequence you wish to retrieve by only one method.'''
                 id_db = mapToLogicalDB(id_db)
                 if begin != '' and coorend != '':
                     upfile = "%s\t%s\t%s\t%s\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
+                        (id_db,id,string.atoi(begin)-string.atoi(flank)-1,\
                         string.atoi(coorend)+string.atoi(flank),strand)
                 elif begin != '' and coorend == '':
                     upfile = "%s\t%s\t%s\t\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank),strand)
+                        (id_db,id,string.atoi(begin)-string.atoi(flank)-1,strand)
                 elif begin == '' and coorend != '':
                     upfile = "%s\t%s\t\t%s\t%s\n" % \
                         (id_db,id,string.atoi(coorend)+string.atoi(flank),strand)
