@@ -223,6 +223,10 @@ Please specify the sequence you wish to retrieve by only one method.'''
     # process seqs to assign values
     if seqs != '':
         if type(seqs) == ListType:
+            # test to make sure maximum number of requested sequences not
+            # exceeded
+            if len(seqs) > string.atoi(config.lookup('MAX_SEQS')):
+                raise ToFASTACGI.error, 'Please contact MGI User Support (mgi-help@informatics.jax.org) to retreived more than %s sequences.' % config.lookup('MAX_SEQS')
             for seqitem in seqs:
                 [id_db,id,begin,coorend,strand,flank] = \
                     string.split(seqitem,'!')
@@ -282,7 +286,12 @@ Please specify the sequence you wish to retrieve by only one method.'''
     if parms.has_key ('upfile') and upfile == '':
         upfile = parms['upfile']
         outupfile = ''
-        for line in string.split(upfile,'\n'):
+        upfile_lines = string.split(upfile,'\n')
+        # test to make sure maximum number of requested sequences not
+        # exceeded
+        if len(upfile_lines) > string.atoi(config.lookup('MAX_SEQS')):
+            raise ToFASTACGI.error, 'Please contact MGI User Support (mgi-help@informatics.jax.org) to retreived more than %s sequences.' % config.lookup('MAX_SEQS')
+        for line in upfile_lines:
             if line != '':
                 [id_db,id,begin,coorend,strand,flank] = string.split(line,'!')
                 id_db = mapToLogicalDB(id_db)
