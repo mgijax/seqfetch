@@ -487,8 +487,11 @@ def cleanInputParms(inputParms):
             upfile = inputParms[key]
 
     newInputParms = {}
-    newInputParms['seqs'] = seqList
-    newInputParms['upfile'] = upfile
+
+    if seqList != []:
+        newInputParms['seqs'] = seqList
+    if upfile != '':
+        newInputParms['upfile'] = upfile
 
     return newInputParms
 
