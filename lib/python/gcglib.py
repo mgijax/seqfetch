@@ -6,14 +6,12 @@
 #	libraries we import
 # Public Functions:
 #	generateGCGListFile (tablist)
-#	checkSeqs (input, config)
-#	getSequences (listfile, firstlistfile, config)
+#	checkSeqs (input, config, profiler)
+#	getSequences (listfile, firstlistfile, config, profiler)
 # Private Functions:
 #	runNames (listfile, filename, gcgserver, login)
-#	runToFASTA2 (cbrout, filename, gcgserver, login)
-#	getGCGOutputOnly (filename, gcgserver, login)
-#	getToFASTAOutput (cbrout, filename, gcgserver, login)
-#	getGCGOutput (filename, gcgserver, login)
+#	runToFASTA (cbrout, filename, gcgserver, login)
+#	getGCGOutput (filename, gcgserver, login, password)
 #	copyListFile (filename, gcgserver, login, password)
 #	seqReader (loopseq, config)
 #	mergeListFiles (nameslistfile, listfile)
@@ -48,21 +46,31 @@ import tofastalib
 # exception to be raised in this module
 error = "gcglib.py error"
 
+# String that is used by the private printString function to save
+# the contents of a file on the remote GCG server using ftplib.
+# The variable is reset before each file is retrieved.
+contents = ''
+
+
 ####################
 # Public Functions #
 ####################
 
 def getSequences (
     filename,        # string; the filename of GCG list file on GCG server
-    firstlistfile,
-    config            # configuration object
+    firstlistfile,   # string: contents of original list file not created
+                     #    by GCG Names command.
+    config,          # configuration object
+    profiler         # Profiler object to track elapsed time.
     ):
 
     # Purpose: Retrieve a set of sequences in FASTA-format specified 
-    #       in a GCG-format list file.  The list file specifies 
-    #       the sequence database, identifier and optionally the
+    #          in a GCG-format list file.  The list file specifies 
+    #          the sequence database, identifier and optionally the
     #          coordinates of a subsequence.
-    # Returns: A string containing FASTA-format sequences.
+    # Returns: 1. A string containing FASTA-format sequences.
+    #          2. List of sequences that were not retrieved.
+    #          3. Profiler object for tracking elapsed time.
     # Assumes: 1. Only one copy of a sequence exists in any given
     #             sequence database except for GenBank.  This implies
     #             that all sequence databases in GCG are maintained by
@@ -95,8 +103,16 @@ def getSequences (
         #           remote GCG server.                              #
         #############################################################
 
+        # Stamp time
+        profiler.stamp('Before call to getGCGOutput to get output' +\
+            ' from GCG Names')
+
         listfile = getGCGOutput(filename,config.lookup('GCG_SERVER'),
-            config.lookup('GCG_ACCOUNT'))
+            config.lookup('GCG_ACCOUNT'),config.lookup('GCG_PASS'))
+
+        # Stamp time
+        profiler.stamp('After call to getGCGOutput to get output' +\
+            ' from GCG Names')
 
         #############################################################
         # Step 1.2. Merge original GCG list file with GCG list file #
@@ -105,6 +121,9 @@ def getSequences (
 
         mergedlistfile, seqids, splitsubseqs, failedseqs = \
             mergeListFiles(listfile, firstlistfile)
+
+        # Stamp time
+        profiler.stamp('After call to mergeListFiles')
 
         if mergedlistfile == "..\n":
             raise error, 'All sequences missing'
@@ -122,6 +141,10 @@ def getSequences (
         copyListFile (mergedfilename,config.lookup('GCG_SERVER'),\
             config.lookup('GCG_ACCOUNT'),config.lookup('GCG_PASS'))
 
+        # Stamp time
+        profiler.stamp('After call copyListFile to put list file' +\
+            ' on GCG server')
+
         # Remove list file from local server
         os.unlink(mergedfilename)
 
@@ -134,15 +157,23 @@ def getSequences (
         tempfile.tempdir = config.lookup('GCG_TEMP_DIR')
         cbrout = tempfile.mktemp()
 
+        # Stamp time
+        profiler.stamp('Before call to runToFASTA')
+
         # Actually run ToFASTA
-        runToFASTA2 (cbrout,mergedfilename,config.lookup('GCG_SERVER'),\
+        runToFASTA (cbrout,mergedfilename,config.lookup('GCG_SERVER'),\
             config.lookup('GCG_ACCOUNT'))
 
+        # Stamp time
+        profiler.stamp('After call to runToFASTA')
 
         # Get sequences from ToFASTA
-        sequences = getToFASTAOutput (cbrout, mergedfilename,\
-            config.lookup('GCG_SERVER'),config.lookup('GCG_ACCOUNT'))
+        sequences = getGCGOutput (cbrout, \
+            config.lookup('GCG_SERVER'),config.lookup('GCG_ACCOUNT'),\
+            config.lookup('GCG_PASS'))
 
+        # Stamp time
+        profiler.stamp('After call to getGCGOutput')
 
         #############################################################
         # Step 3:                                                   #
@@ -157,19 +188,22 @@ def getSequences (
         sequences = processSequences (sequences, seqids, splitsubseqs,
             config)
 
+        profiler.stamp('After call to processSequences')
+
     except error, message:
         raise error, 'Error in getSequences.\n' + message
 
-    return sequences, failedseqs
+    return sequences, failedseqs, profiler
 
-def checkSeqs(input,config):
+def checkSeqs(input,config,profiler):
 
     # Purpose: Runs the program GCG Names to determine whether any
     #          input sequences have been split up by GCG.  Sequences
     #          longer than 350kb are split up into 110kb fragments
     #          that overlap by 10kb.
-    # Returns: The filename of the output from GCG Names on the 
-    #          remote GCG server.
+    # Returns: 1. The filename of the output from GCG Names on the 
+    #             remote GCG server.
+    #          2. Profiler object for tracking elapsed time.
     # Assumes: nothing
     # Effects: nothing
     # Throws:  nothing
@@ -217,6 +251,9 @@ def checkSeqs(input,config):
     tempfile.tempdir = config.lookup('GCG_TEMP_DIR')
     cbrout = tempfile.mktemp()
 
+    # Stamp time
+    profiler.stamp('Before call to copyListFile')
+
     # Copy list file to GCG server
     copyListFile (filename,config.lookup('GCG_SERVER'),\
         config.lookup('GCG_ACCOUNT'),config.lookup('GCG_PASS'))
@@ -226,12 +263,18 @@ def checkSeqs(input,config):
     # Construct input list file for GCG Names.                  #
     #############################################################
 
+    # Stamp time
+    profiler.stamp('Before call to runNames')
+
     # Run GCG Names and direct output to cbrout
     runNames (filename,cbrout,config.lookup('GCG_SERVER'),\
         config.lookup('GCG_ACCOUNT'))
 
+    # Stamp time
+    profiler.stamp('After call to runNames')
+
     # Return filename of GCG Names output file on remote GCG server
-    return cbrout
+    return cbrout,profiler
 
 def generateGCGListFile(tablist):
 
@@ -299,6 +342,20 @@ def generateGCGListFile(tablist):
 # Private Functions #
 #####################
 
+def printString(s):
+
+    # Purpose: Used as the callback function when using ftplib.retrlines()
+    #          function.  It keeps appending the input string, s, to the
+    #          global variable, contents.
+    # Returns: nothing
+    # Assumes: The global variable contents has been initialized.
+    # Effects: nothing
+    # Throws:  nothing
+
+    global contents
+
+    contents = contents + s + "\n"
+
 def runNames (listfile,filename,gcgserver,login):
 
     # Purpose: Run the GCG Names program.
@@ -315,7 +372,7 @@ def runNames (listfile,filename,gcgserver,login):
     stdoutput, stderror, exitcode = runCommand.runCommand (cmd, {})
 
 
-def runToFASTA2 (cbrout, filename,gcgserver,login):
+def runToFASTA (cbrout, filename,gcgserver,login):
 
     # Purpose: Run the GCG ToFASTA program.
     # Returns: A file containing FASTA-formatted sequences.
@@ -331,54 +388,34 @@ def runToFASTA2 (cbrout, filename,gcgserver,login):
     stdoutput, stderror, exitcode = runCommand.runCommand (cmd, {})
 
 
-def getToFASTAOutput (cbrout, filename,gcgserver,login):
+def getGCGOutput (filename,gcgserver,login,password):
 
-    # Purpose: Extract sequences from contents of output file from 
-    #          GCG ToFASTA on remote GCG server, and removes input
-    #          and output files for ToFASTA run.
-    # Returns: A string containing FASTA-formatted sequences 
-    #          returned by GCG ToFASTA.
-    # Assumes: nothing
-    # Effects: Removes input and output files for ToFASTA run on
-    #          remote GCG server.
-    # Throws:  nothing
-
-    try:
-        # Construct command (using rsh)
-        cmd = "rsh -n -l %s %s cat %s;" % (login,gcgserver,cbrout) +\
-            "rsh -n -l %s %s rm -rf %s;" % (login,gcgserver,cbrout) +\
-            "rsh -n -l %s %s rm -rf %s" % (login,gcgserver,filename)
-
-        stdoutput, stderror, exitcode = runCommand.runCommand (cmd, {})
-
-        # Extract sequence by removing GCG banner
-        sequence = stdoutput[string.find(stdoutput,'>'):\
-            string.find(stdoutput,'Content-type')]
-    except:
-        raise error, 'Cannot get output from ToFASTA in file %s' % filename
-
-    return sequence
-    
-def getGCGOutput (filename,gcgserver,login):
-
-    # Purpose: Extract contents of a file by running UNIX cat
-    #          command, and remove that file.
+    # Purpose: Get contents of a file from remote GCG server using FTP.
     # Returns: A string containing the file contents.
     # Assumes: nothing
     # Effects: Removes file that is read.
     # Throws:  error if unable to get file contents.
 
-    # Construct command (using rsh and cat)
-    cmd = 'rsh -n -l %s %s cat %s;rsh -n -l %s %s rm -rf %s' %\
-        (login,gcgserver,filename,login,gcgserver,filename)
+    global contents
 
-    stdoutput, stderror, exitcode = runCommand.runCommand (cmd, {})
+    try:
 
-    # Remove GCG banner that is generated from each rsh command
-    stdoutput = stdoutput[string.find(stdoutput,'!!SEQUENCE_LIST'):\
-        string.find(stdoutput,\
-            '                     Welcome to the WISCONSIN PACKAGE',\
-            string.find(stdoutput,'!!SEQUENCE_LIST')+1)]
+        # Use FTP to transfer output of ToFASTA from remote GCG server
+        contents = ''
+
+        ftp = ftplib.FTP(gcgserver)
+        ftp.login(login,password)
+        cmd = 'RETR %s' % (filename)
+        ftp.retrlines(cmd,printString)
+        ftp.quit()
+
+        stdoutput = contents
+
+        # Need to add code back in that would remove filename
+        # file on remote GCG server.
+
+    except:
+        raise error, 'Cannot get file from GCG server: %s' % filename
 
     return stdoutput
     
@@ -621,14 +658,14 @@ def seqReader(loopseq,config):
 def mergeListFiles(nameslistfile,listfile):
 
     # Purpose: Merge two GCG formatted list files:
-    #            1. one that may contain subsequence
+    #            1. (listfile) One that may contain subsequence
     #               coordinates, but no split sequences
     #               or no new versions of sequences.
-    #         2. another that is from the output of GCG Names
-    #               when run with the above list file as input.
-    #               This list file does not include coordinates,
-    #               but may contain split sequences and/or new
-    #               versions of sequences.
+    #            2. (nameslistfile) Another that is from the output 
+    #               of GCG Names when run with the above list file
+    #               as input.  This list file does not include 
+    #               coordinates, but may contain split sequences 
+    #               and/or new versions of sequences.
     #          Merge the above list files into one where:
     #            1. any sequence in the first file that is split 
     #               up by GCG, is replaced with the identifiers
@@ -638,7 +675,7 @@ def mergeListFiles(nameslistfile,listfile):
     #               with that newer version only.
     # Returns: 1. string containing merged GCG format list file
     #          2. list of seqids in first list file
-    #       3. dictionary of split subsequence coordinates
+    #          3. dictionary of split subsequence coordinates
     #             keyed by baseseqID
     # Assumes: nothing
     # Effects: nothing
@@ -1077,4 +1114,6 @@ def processSequences (sequence, seqids, splitsubseqs, config):
     sequence = masterbuffer
 
     return sequence
+
+
 
