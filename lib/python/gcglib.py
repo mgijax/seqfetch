@@ -192,7 +192,7 @@ def getSequences (
         profiler.stamp('After call to processSequences')
 
     except error, message:
-        raise error, 'Error in getSequences.\n' + message
+        raise error, '' + message
 
     return sequences, failedseqs, profiler
 

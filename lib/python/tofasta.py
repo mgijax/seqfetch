@@ -125,7 +125,9 @@ class ToFASTACGI (CGInocontenttype.CGI):
 
             list = [
                 '*****',
-                'The Sequence Retrieval Tool failed to run.',
+                'An error occurred while trying to retrieve your ' + \
+                'sequence(s) from our GCG repository.',
+                '-----',
                 '%s' % message,
                 '*****'
                 ]
@@ -303,7 +305,8 @@ Please specify the sequence you wish to retrieve by only one method.'''
     # and genome-build sequences
     gcgupfile,genomeupfile = separateInputFile(upfile)
 
-    failedmessage = ''
+    failedgenomemessage = ''
+    failedgcgmessage = ''
 
     # Stamp time
     profiler.stamp('Before call to genomelib.getSequences')
@@ -318,7 +321,7 @@ Please specify the sequence you wish to retrieve by only one method.'''
             profiler.stamp('After call to genomelib.getSequences')
 
             if failedgenomeseqs != '':
-                failedmessage = "Sequence Retrieval Tool Failed " + \
+                failedgenomemessage = "The Sequence Retrieval Tool failed " + \
                     "to find these genome sequences:\n%s" % failedgenomeseqs
 
     except:
@@ -350,18 +353,23 @@ Please specify the sequence you wish to retrieve by only one method.'''
              profiler.stamp('After call to gcglib.getSequences')
 
              if failedgcgseqs != '\n':
-                failedmessage = failedmessage + \
-                    "Sequence Retrieval Tool Failed to find these " +\
-                    "non-genome build sequences:\n%s" % failedgcgseqs
+                failedgcgmessage = "The Sequence Retrieval Tool failed " + \
+                    "to find these sequences:\n%s" % failedgcgseqs
 
     except gcglib.error, message:
         raise ToFASTACGI.error, \
-            'Error in retrieving non-genome build sequences.\n' + message
+            'Error in retrieving sequences.\n' + message
 
-    sequence = gcgsequence[:-1] + "\n" + genomesequence
+    if gcgsequence == "":
+        sequence = genomesequence
+    else:
+        sequence = gcgsequence[:-1] + "\n" + genomesequence
 
-    if failedmessage != '':
-        print "*****\n" + failedmessage + "*****\n"
+    if (failedgenomemessage != '') or (failedgcgmessage != ''):
+        print "*****\n" + \
+              "An error occurred while trying to retrieve your " + \
+              "sequence(s) from our GCG repository.\n-----\n" + \
+              failedgenomemessage + failedgcgmessage + "*****"
 
     return sequence,profiler,debug
 

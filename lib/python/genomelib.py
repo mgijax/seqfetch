@@ -130,6 +130,6 @@ def getSequences (
                 sequences = sequences + string.joinfields(outfilelines,'')
 
     except genomeerror, message:
-        raise genomeerror, 'Error in getSequences.\n' + message
+        raise genomeerror, '' + message
 
     return sequences, failedseqs
