@@ -243,9 +243,8 @@ Please specify the sequence you wish to retrieve by only one method.'''
                     strand = '+'
                 elif strand == '0':
                     strand = '-'
-                else:
+                elif strand != '+' and strand != '-' :
                     strand = '+'
-
                 # Sept 29, 04
                 # Added to support additional SRT parameter
                 if chromo != '' and id_db == 'mousegenome':
@@ -273,14 +272,13 @@ Please specify the sequence you wish to retrieve by only one method.'''
                 # Sept 29, 04
                 # Added chromo input parameter
                 [id_db,id,chromo,begin,coorend,strand,flank] = string.split(seqs,'!')
-
                 if flank == '':
                     flank = 0
                 if strand == '1':
                     strand = '+'
                 elif strand == '0':
                     strand = '-'
-                else:
+                elif strand != '+' and strand != '-' :
                     strand = '+'
 
                 # Sept 29, 04
