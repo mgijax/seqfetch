@@ -1,3 +1,14 @@
+TAG: seqfetch-1-0-4
+DATE: 03/02/2004
+STAFF: blk
+RELEASE: Alpha
+CHANGES:
+1) Added lib/python/CGInocontenttype.py which is identical to CGI.py
+   from /usr/local/mgi/lib/python, but does not print out any HTML
+   Content-Type.  CGI.py always prints out 'Content-Type: text/html'
+   and seqfetch needs to have the Content-Type set to text/plain.
+2) Changed lib/python/tofasta.py to use CGInocontenttype.py.
+3) Changed www/tofasta.cgi to print out 'Content-Type: tex/plain\n'.
 TAG: seqfetch-1-0-3
 DATE: 02/04/2004
 STAFF: blk
