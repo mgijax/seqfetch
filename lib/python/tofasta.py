@@ -95,6 +95,9 @@ class ToFASTACGI (CGInocontenttype.CGI):
         # Instantiate Profiler class to track time different steps take.
         profiler = Profiler.Profiler()
 
+        # Initialize debug parameter
+        debug = '0'
+
         parms = self.get_parms()
 
         # Stamp time
@@ -109,9 +112,6 @@ class ToFASTACGI (CGInocontenttype.CGI):
 
             # Stamp time
             profiler.stamp('After parseParameters')
-
-            # If we got this far, then go ahead and mark up the
-            # blast results...
 
             # send the output to the user
 
@@ -247,28 +247,32 @@ Please specify the sequence you wish to retrieve by only one method.'''
                     upfile = upfile + "%s\t%s\t\t\t%s\n" % (id_db,id,strand)
 
         else:
-            [id_db,id,begin,coorend,strand,flank] = string.split(seqs,'!')
-            if flank == '':
-                flank = 0
-            if strand == '1':
-                strand = '+'
-            elif strand == '0':
-                strand = '-'
-            else:
-                strand = '+'
-            id_db = mapToLogicalDB(id_db)
-            if begin != '' and coorend != '':
-                upfile = "%s\t%s\t%s\t%s\t%s\n" % \
-                    (id_db,id,string.atoi(begin)-string.atoi(flank),\
-                    string.atoi(coorend)+string.atoi(flank),strand)
-            elif begin != '' and coorend == '':
-                upfile = "%s\t%s\t%s\t\t%s\n" % \
-                    (id_db,id,string.atoi(begin)-string.atoi(flank),strand)
-            elif begin == '' and coorend != '':
-                upfile = "%s\t%s\t\t%s\t%s\n" % \
-                    (id_db,id,string.atoi(coorend)+string.atoi(flank),strand)
-            else:
-                upfile = "%s\t%s\t\t\t%s\n" % (id_db,id,strand)
+            try:
+                [id_db,id,begin,coorend,strand,flank] = string.split(seqs,'!')
+                if flank == '':
+                    flank = 0
+                if strand == '1':
+                    strand = '+'
+                elif strand == '0':
+                    strand = '-'
+                else:
+                    strand = '+'
+                id_db = mapToLogicalDB(id_db)
+                if begin != '' and coorend != '':
+                    upfile = "%s\t%s\t%s\t%s\t%s\n" % \
+                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
+                        string.atoi(coorend)+string.atoi(flank),strand)
+                elif begin != '' and coorend == '':
+                    upfile = "%s\t%s\t%s\t\t%s\n" % \
+                        (id_db,id,string.atoi(begin)-string.atoi(flank),strand)
+                elif begin == '' and coorend != '':
+                    upfile = "%s\t%s\t\t%s\t%s\n" % \
+                        (id_db,id,string.atoi(coorend)+string.atoi(flank),strand)
+                else:
+                    upfile = "%s\t%s\t\t\t%s\n" % (id_db,id,strand)
+
+            except:
+                raise ToFASTACGI.error, 'Incorrect usage. Be sure to include proper number of fields to identify a sequence and correct number of delimiters.'                
 
     # process upfile to assign values
     if parms.has_key ('upfile') and upfile == '':
@@ -403,19 +407,21 @@ def mapToLogicalDB(id_db):
         id_db = "SWISS-PROT"
     elif id_db == "trembl":
         id_db = "TrEMBL"
+    elif id_db == "sptrembl":
+        id_db = "SWISS-PROT"
     elif id_db == "tigrmgi":
         id_db = "TIGR Mouse Gene Index"
     elif id_db == "tigrrgi":
         id_db = "TIGR Rat Gene Index"
     elif id_db == "tigrhgi":
         id_db = "TIGR Human Gene Index"
-    elif id_db == "dots":
-        id_db = "DoTS"
+    elif id_db == "dotsm":
+        id_db = "DoTS Mouse"
+    elif id_db == "niamgi":
+        id_db = "NIA Mouse Gene Index"
     elif id_db == "mousegenome":
         id_db = "mousegenome"
 
     return id_db
-
-
 
 

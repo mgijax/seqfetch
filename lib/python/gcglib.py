@@ -175,6 +175,7 @@ def getSequences (
         # Stamp time
         profiler.stamp('After call to getGCGOutput')
 
+
         #############################################################
         # Step 3:                                                   #
         # Process sequences from GCG ToFASTA to:                    #
@@ -217,7 +218,7 @@ def checkSeqs(input,config,profiler):
     names_listfile = ''
     seqids = []
 
-    seqidre = regex.compile("\([a-zA-Z]+:[a-zA-Z0-9_]+\) *" +\
+    seqidre = regex.compile("\([a-zA-Z_0-9]+:[a-zA-Z0-9_\-]+\) *" +\
         "\([Begin:0-9]*\) *\([End:0-9]*\)")
 
     # Get list of seqIDs from input
@@ -288,7 +289,7 @@ def generateGCGListFile(tablist):
     gcglist = "..\n"
 
     tablistre = regex.compile("\([A-Za-z \-]+\)\t" +\
-        "\([A-Za-z0-9_\.]+\)\t*\([0-9]*\)\t*\([0-9]*\)")
+        "\([A-Za-z0-9_\.\-]+\)\t*\([0-9]*\)\t*\([0-9]*\)")
 
     for line in string.split(tablist,'\n'):
         if tablistre.match(line) > -1:
@@ -316,8 +317,12 @@ def generateGCGListFile(tablist):
                 gcgline = "tigrrgi:%s" % id
             elif id_db == "TIGR Human Gene Index":
                 gcgline = "tigrhgi:%s" % id
-            elif id_db == "DoTS":
-                gcgline = "dots:%s" % id
+            elif id_db == "DoTS Mouse":
+                # Translate DoTS IDs from 'dt.55133146' to 'dt55133146'
+                id = regsub.gsub('\.','',id)
+                gcgline = "dotsm:%s" % id
+            elif id_db == "NIA Mouse Gene Index":
+                gcgline = "niamgi:%s" % id
 
             # Add coordinates of subsequences if specified in input.
 
@@ -517,13 +522,13 @@ def seqReader(loopseq,config):
 
     # Regular expression to find first line of a sequence in a 
     # multi-sequence FASTA-format file, and capture seqID.
-    seqidre = regex.compile(">\([a-zA-Z0-9_]+\) .*")
+    seqidre = regex.compile(">\([a-zA-Z0-9_\-]+\) .*")
 
     # Regular expression to determine whether a sequence 
     # has been split by GCG, and get the base seqID.  For example, 
     # the base seqID of 'AC134402_0' is 'AC134402'.
-    splitseqidre = regex.compile("\([a-zA-Z0-9][a-zA-Z0-9]_*" +\
-        "[a-zA-Z0-9]+\)_\([0-9]+\)")
+    splitseqidre = regex.compile("\([a-zA-Z0-9][a-zA-Z0-9\-]_*" +\
+        "[a-zA-Z0-9\-]+\)_\([0-9]+\)")
 
     # Get first sequence (seqID and base seqID from first line)
     if seqidre.match(loopseq) > -1:
@@ -719,19 +724,19 @@ def mergeListFiles(nameslistfile,listfile):
 
     # Regex to get logical DB ID and seqID as one string, along with 
     # begin and end coordinates as separate strings.
-    linere = regex.compile("\([A-Za-z_]+:[a-zA-Z0-9_]+\) *" +\
+    linere = regex.compile("\([A-Za-z_0-9]+:[a-zA-Z0-9_\-]+\) *" +\
         "[Begin:]*\([0-9]*\) *[End:]*\([0-9]*\)")
 
     # Regex to get logical DB ID and seqID as separate strings, and
     # begin and end coordinates as separate strings.
-    lineseqidre = regex.compile("\([A-Za-z_]+\):\([a-zA-Z0-9_]+\) *" +\
+    lineseqidre = regex.compile("\([A-Za-z_0-9]+\):\([a-zA-Z0-9_\-]+\) *" +\
         "[Begin:]*\([0-9]*\) *[End:]*\([0-9]*\)")
 
     # Regex to get logical DB ID and seqID as separate strings
-    seqidre = regex.compile("\([A-Za-z_]+\):\([a-zA-Z0-9_]+\)")
+    seqidre = regex.compile("\([A-Za-z_0-9]+\):\([a-zA-Z0-9_\-]+\)")
 
     # Regex to detect split sequence ID and get base seqID
-    splitseqidre = regex.compile("\([a-zA-Z0-9][a-zA-Z0-9]_*" +\
+    splitseqidre = regex.compile("\([a-zA-Z0-9][a-zA-Z0-9\-]_*" +\
         "[a-zA-Z0-9]+\)_[0-9]+")
 
     # Regex to get coordinates from a list
@@ -740,6 +745,7 @@ def mergeListFiles(nameslistfile,listfile):
     # Process contents of original list file to get coordinates
 
     listfilelines = string.split(listfile,'\n')
+
     for line in listfilelines:
 
         begin = 0
@@ -1016,6 +1022,8 @@ def processSequences (sequence, seqids, splitsubseqs, config):
     #        original list file, then the variable 'store' is   #
     #        appended to 'masterbuffer', and the variable       #
     #        'store' is reset with the current sequence.        #
+    #        Note that this will allow for removing duplicate   #
+    #        sequences returned from ToFASTA.                   #
     #     3. All remaining sequences are processed as described #
     #        above.                                             #
     #############################################################
@@ -1048,41 +1056,9 @@ def processSequences (sequence, seqids, splitsubseqs, config):
     # 3. if final sequence
     #    1. save final sequence to masterbuffer
 
-    # Read and store first sequence
-    currentbaseseqID,nextbaseseqID,firstseq,loopsequence =\
-        seqReader(loopsequence,config)
 
-    # Check to see if sequence has been split by GCG and has a 
-    # subsequence specified in the original list file.  Get the
-    # subsequence if needed.
-    if splitsubseqs.has_key(currentbaseseqID):
-        subseqcoords = string.split(\
-            splitsubseqs[currentbaseseqID][0],',')
-        splitsubseqs[currentbaseseqID] = \
-            splitsubseqs[currentbaseseqID][1:]
-        firstseq = fastaseqlib.getSubSeq(firstseq,subseqcoords[0],\
-            subseqcoords[1],config)
-    
-    # Check to make sure the sequence is the first sequence in the 
-    # original list file.
-    if currentbaseseqID == seqids[0]:
-        store = firstseq + "\n"
-        seqids = seqids[1:]
-
-    # If the first sequence in original list file is not the first
-    # sequence in the output, then step through all sequences in 
-    # original list file until the first sequence in the output is
-    # found.
-    else:
-        loop_id_counter = -1
-        for loop_id in seqids:
-           loop_id_counter = loop_id_counter + 1
-           if loop_id == currentbaseseqID:
-              store = firstseq + "\n"
-              seqids = seqids[loop_id_counter:]
-              break
-
-    # Read and store any remaining sequences    
+    # Read and store sequences    
+    loop_counter = 0
     while (len(loopsequence) > 0):
 
         currentbaseseqID,nextbaseseqID,nextseq,loopsequence = \
@@ -1097,16 +1073,43 @@ def processSequences (sequence, seqids, splitsubseqs, config):
                 splitsubseqs[currentbaseseqID][1:]
             nextseq = fastaseqlib.getSubSeq(nextseq,subseqcoords[0],\
                 subseqcoords[1],config)
+            if loop_counter == 0:
+                store = nextseq = "\n"
 
         # handle scenario #1
-        if currentbaseseqID == seqids[0]:
-            masterbuffer = masterbuffer + store
-            store = nextseq + "\n"
-            seqids = seqids[1:]
+        elif (currentbaseseqID != nextbaseseqID) and (currentbaseseqID == seqids[0]):
+            if loop_counter == 0:
+                store = nextseq + "\n"
+            else:
+                masterbuffer = masterbuffer + store
+                store = nextseq + "\n"
 
-        # handle scenario #2
-        else:
-            print "ERROR:  sequence missing:",seqids[0]
+            # Adjust seqids to remove missing ID(s)
+            id_loop_counter = 0
+            for id_loop in seqids:
+                if currentbaseseqID == id_loop:
+                    seqids = seqids[id_loop_counter+1:]
+                    break
+                id_loop_counter = id_loop_counter + 1
+
+        # handle scenario where current sequence does not match next
+        # sequence in original list file
+        elif (currentbaseseqID != seqids[0]):
+            if loop_counter == 0:
+                store = nextseq + "\n"
+            else:
+                masterbuffer = masterbuffer + store
+                store = nextseq + "\n"
+            # Adjust seqids to remove missing ID(s)
+            id_loop_counter = 0
+            for id_loop in seqids:
+                if currentbaseseqID == id_loop:
+                    seqids = seqids[id_loop_counter+1:]
+                    break
+                id_loop_counter = id_loop_counter + 1
+
+
+        loop_counter = loop_counter + 1
 
     # handle scenario #3
     masterbuffer = masterbuffer + store
