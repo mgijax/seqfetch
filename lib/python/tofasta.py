@@ -226,7 +226,7 @@ Please specify the sequence you wish to retrieve by only one method.'''
             # test to make sure maximum number of requested sequences not
             # exceeded
             if len(seqs) > string.atoi(config.lookup('MAX_SEQS')):
-                raise ToFASTACGI.error, 'Please contact MGI User Support (mgi-help@informatics.jax.org) to retreived more than %s sequences.' % config.lookup('MAX_SEQS')
+                raise ToFASTACGI.error, 'Please contact MGI User Support (mgi-help@informatics.jax.org) to retrieve more than %s sequences.' % config.lookup('MAX_SEQS')
             for seqitem in seqs:
                 [id_db,id,begin,coorend,strand,flank] = \
                     string.split(seqitem,'!')
