@@ -228,8 +228,11 @@ Please specify the sequence you wish to retrieve by only one method.'''
             if len(seqs) > string.atoi(config.lookup('MAX_SEQS')):
                 raise ToFASTACGI.error, 'Please contact MGI User Support (mgi-help@informatics.jax.org) to retrieve more than %s sequences.' % config.lookup('MAX_SEQS')
             for seqitem in seqs:
-                [id_db,id,begin,coorend,strand,flank] = \
-                    string.split(seqitem,'!')
+                try:
+                    [id_db,id,begin,coorend,strand,flank] = \
+                        string.split(seqitem,'!')
+                except:
+                    raise ToFASTACGI.error, 'One of the requested sequences %s was not specified properly.  Please resubmit your search.' % seqitem
                 if flank == '':
                     flank = 0
                 if strand == '1':
