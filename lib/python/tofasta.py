@@ -457,31 +457,55 @@ def cleanInputParms(inputParms):
 # Purpose: Convert multiple APIs to have same input naming convention
 #   Detail page javaScript requires we use more than the 'seqs' parms.
 #   seq(n) is now valid, where n is any number (e.g. seq1, seq2, seq3)
+#   If a flank(n) parameter is passed, it is appended to coorisponding
+#   seq(n)
 # Returns: dictionary; like self parms, with seq(n) values now in
 #   the seqs parameter 
 # Assumes: Nothing
 # Effects: Nothing
 # Throws:  Nothing
 
-    seqList = []
-    upfile  = ''
+    seqList     = []           # list of strings to become new seqs parm
+    upfile      = ''
+    flankValues = {}           # temp holding for flank values
+    flankValueTemplate = '%s'  # used to cast an int flank value back to 
+                               # string, for easy modification
+    # regular expressions
+    seqReg   = regex.compile('seq[0-9]+')  
+    flankReg = regex.compile('flank[0-9]+')
 
-    cgiKeys = inputParms.keys()
+    cgiKeys  = inputParms.keys()
 
-    reg = regex.compile('seq[0-9s]+')
+    # pull out flanking values from input parms, to be matched to seqN later
+    for key in cgiKeys:
+        if flankReg.match(key) != -1:
+            seqParmNum = key[5:]
+            flankValue = flankValueTemplate % (string.atoi(inputParms[key]) * 1000)
 
-    for key in cgiKeys :
+            flankValues[seqParmNum] = flankValue
 
-        if reg.match(key) != -1 :
-                
-            if type(inputParms[key]) == types.StringType:
-                parmValueList = [inputParms[key]]
+    # gather all values seqN parameter
+    for key in cgiKeys:
 
+        # Origional input parameter API spec
+        if key == 'seqs':
+            if type(inputParms['seqs']) == types.StringType:
+                seqList.append(inputParms['seqs'])
             else:
-                parmValueList = inputParms[key]
-                
-            for parmValue in parmValueList:
-                seqList.append(parmValue)
+                for seqsValue in inputParms['seqs']:
+                    seqList.append(seqsValue)
+
+        # matched seqN regex
+        if seqReg.match(key) != -1:
+
+            # since only string parms can have flanking...
+            if type(inputParms[key]) == types.StringType:
+
+                # Determine if this parameter needs flank appended
+                if key[3:] in flankValues.keys():
+                    seqList.append(inputParms[key] + flankValues[seqParmNum])
+                else:
+                    seqList.append(inputParms[key])
 
         if key == "upfile":
             upfile = inputParms[key]
