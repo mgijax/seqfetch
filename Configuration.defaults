@@ -26,17 +26,17 @@ PYTHON		/usr/local/bin/python
 TMPDIR         /tmp
 
 # Absolute path to the Yank usage log file
-USAGE_LOG      /home/blk/seq_fetch/logs/seq_fetch_usage.log
+USAGE_LOG      /usr/local/mgi/seqfetch/logs/seqfetch_usage.log
 
 # Absolute path to the Yank error log file
-ERROR_LOG      /home/blk/seq_fetch/logs/seq_fetch_error.log
+ERROR_LOG      /usr/local/mgi/seqfetch/logs/seqfetch_error.log
 
 # Run in debug mode? (0/1)
 DEBUG	0
 
 # colon-delimited list of directories containing Python libraries, including
 # the lib/python directory under this installation directory
-LIBDIRS		/usr/local/mgi/lib/python/:/usr/local/mgi/mass/dev/lib/python/:/home/blk/seq_fetch/lib/python/
+LIBDIRS		/usr/local/mgi/lib/python/:/usr/local/mgi/mass/dev/lib/python/:/usr/local/mgi/seqfetch/lib/python/
 
 
 # Line length for FASTA format sequences returned by tool
