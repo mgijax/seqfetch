@@ -1,0 +1,55 @@
+Installation Steps
+====================
+
+1. After exporting latest tagged version, make sure directory is
+   accessible by the web server.  This is typically done by 
+   installing the product as the user 'webster' who is a member
+   of the group 'www'.
+
+2. cd to the 'seqfetch' directory:
+
+      cd seqfetch
+
+3. Make a copy of the 'Configuration.defaults' file for editing:
+
+      cp Configuration.defaults Configuration
+
+4. Edit the 'Configuration' file as necessary.  Instructions are 
+   included in the file.
+
+5. Run the Install script:
+
+      ./Install <full-path to Configuration.py>
+
+   For example:
+
+      ./Install /usr/local/mgi/lib/python/Configuration.py
+
+
+   You will see messages as the Install script runs.  Lots of them.  
+   You may see error messages that indicate problems in the Configuration 
+   file.  If so, make the appropriate changes in the Configuration file 
+   and run Install again.
+
+   Each time you run Install, the messages you see on the screen are also 
+   logged to the file logs/Install.log.  Be sure to inspect this file after 
+   running Install to make sure there were no errors.
+
+6. Set up rsh on remote GCG server:
+
+   In the home directory of the user account on the remote GCG server, 
+   add or edit a file named .rhosts .  Make sure that this file contains
+   the following.
+
+      <local server> <local webserver username>
+
+   For example:
+
+      rohan.informatics.jax.org nobody
+
+7. Make sure temporary directory exists on remote GCG server:
+
+   The 'GCG_TEMP_DIR' variable in the Configuration file specifies a 
+   directory that must exist on the remote GCG server.  Create this 
+   directory if needed.
+
