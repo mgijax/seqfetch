@@ -363,7 +363,7 @@ Please specify the sequence you wish to retrieve by only one method.'''
     if gcgsequence == "":
         sequence = genomesequence
     else:
-        sequence = gcgsequence + "\n" + genomesequence
+        sequence = gcgsequence + genomesequence
 
     if (failedgenomemessage != '') or (failedgcgmessage != ''):
         print "*****\n" + \
