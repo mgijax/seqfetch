@@ -195,8 +195,10 @@ def parseParameters (
 
     if not (parms.has_key('upfile') or parms.has_key('seqs')):
         raise ToFASTACGI.error, \
-            '''Input to Sequence Retrieval Tool incorrect.
-No sequence was specified.'''
+            '''Please select at least one sequence.
+
+To make a selection, click the Back button, click the checkbox next to each desired
+sequence, and then download in FASTA format.'''
 
     if parms.has_key('upfile') and parms.has_key('seqs'):
         if parms['upfile'] == '' and parms['seqs'] == '':
@@ -363,7 +365,7 @@ Please specify the sequence you wish to retrieve by only one method.'''
     if gcgsequence == "":
         sequence = genomesequence
     else:
-        sequence = gcgsequence + genomesequence
+        sequence = string.rstrip(gcgsequence) + "\n" + genomesequence
 
     if (failedgenomemessage != '') or (failedgcgmessage != ''):
         print "*****\n" + \
