@@ -1,4 +1,4 @@
-TAG: seq_fetch-1-0-3
+TAG: seqfetch-1-0-3
 DATE: 02/04/2004
 STAFF: blk
 RELEASE: Alpha
@@ -25,20 +25,20 @@ CHANGES:
 4) Added the function printString to lib/python/gcglib.py to be used as
    a callback function when using ftplib in the getGCGOutput function.
    This also required the introduction of the global variable, contents.
-TAG: seq_fetch-1-0-2
+TAG: seqfetch-1-0-2
 DATE: 01/21/2004
 STAFF: blk
 RELEASE: Alpha
 CHANGES:
 1) Corrected default username and password for remote GCG server and
    path for *.nib files in Configuration.defaults.
-TAG: seq_fetch-1-0-1
+TAG: seqfetch-1-0-1
 DATE: 01/21/2004
 STAFF: blk
 RELEASE: Alpha
 CHANGES:
 1) Added README.Install file.
-TAG: seq_fetch-1-0-0
+TAG: seqfetch-1-0-0
 DATE: 01/20/2004
 STAFF: blk
 RELEASE: Alpha
