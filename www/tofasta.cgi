@@ -62,6 +62,8 @@ import tofasta
 # main    #
 ###########
 
+print 'Content-type: text/plain\n'
+
 if __name__ == '__main__':
     mycgi = tofasta.ToFASTACGI()
     mycgi.go()
