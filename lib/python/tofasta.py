@@ -353,8 +353,10 @@ Please specify the sequence you wish to retrieve by only one method.'''
             profiler.stamp('After call to genomelib.getSequences')
 
             if failedgenomeseqs != '':
+                failedseqmsg = "Chr:%s  Begin:%s  End:%s  Flank:%s\n" \
+                    % (chromo,begin,coorend,flank)
                 failedgenomemessage = "The Sequence Retrieval Tool failed " + \
-                    "to find these genome sequences:\n%s" % failedgenomeseqs
+                    "to find this genome sequence:\n%s" % failedseqmsg
             if config.has_key('GENOMIC_PATH') :
 		genomesequence = regsub.gsub(config['GENOMIC_PATH'],
 				             '',
