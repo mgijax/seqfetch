@@ -73,3 +73,7 @@ GENOMIC_PATH /net/hobbiton/data/downloads/ftp.ensembl.org/
 
 # Maximum number of sequences that may be retrieved
 MAX_SEQS 1000
+
+# python formatted string representing the file format of the chromosome files
+# The %s is a chromosome number, X, Y, or M 
+NIB_FILE_FORMAT chr%s.fa.nib
