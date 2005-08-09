@@ -230,7 +230,7 @@ def checkSeqs(input,config,profiler):
             if seqidre.match(line) > -1:
                 seqid = seqidre.group(1)
                 rest = seqidre.group(2)
-                seqids.append(seqid + '*')
+                seqids.append(seqid)
     else:
         # Case of seqID input
         seqids = [input]
