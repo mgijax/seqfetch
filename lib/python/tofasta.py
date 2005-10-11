@@ -195,6 +195,8 @@ def parseParameters (
     gcgsequence = ''
     sequence = ''
     debug = ''
+    inputSeqList = []
+    seperator = "#SEP#" # 3.4 seperates multilpe entries in one 'seqs' parm
 
     # clean the input parameters to ensure correct naming of seq parms
     parms = cleanInputParms(parms)
@@ -227,16 +229,25 @@ Please specify the sequence you wish to retrieve by only one method.'''
     if parms.has_key ('returnErrors'):
         returnerrors = string.strip(parms['returnErrors'])
     if parms.has_key ('debug'):
-	debug = string.strip(parms['debug'])
+        debug = string.strip(parms['debug'])
 
     # process seqs to assign values
     if seqs != '':
         if type(seqs) == ListType:
+
             # test to make sure maximum number of requested sequences not
             # exceeded
             if len(seqs) > string.atoi(config.lookup('MAX_SEQS')):
                 raise ToFASTACGI.error, 'Please contact MGI User Support (mgi-help@informatics.jax.org) to retrieve more than %s sequences.' % config.lookup('MAX_SEQS')
-            for seqitem in seqs:
+
+            # MGI 3.4 release
+            # There can now be multiple sequence parameters bound into a 
+            # single 'seqs' input field.  This splits them out.
+            for inputSeq in seqs:
+                for seq in string.split(inputSeq,seperator):
+                    inputSeqList.append(seq)
+
+            for seqitem in inputSeqList:
                 try:
 
                 # Sept 29, 04
