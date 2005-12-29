@@ -43,7 +43,6 @@ from types import *
 
 # MGI Python libraries
 
-import seqlib
 
 # Sequence Retrieval Tool library
 
@@ -124,7 +123,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
             output = [sequence]
 
 
-        except (self.error, seqlib.error), message:
+        except (self.error), message:
             # Give an error screen to the user which passes
             # along the message which was raised with the
             # exception.
