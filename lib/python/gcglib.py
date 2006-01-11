@@ -34,7 +34,6 @@ import os
 # MGI Python libraries
 
 import runCommand
-import seqlib
 import fastaseqlib
 import tofastalib
 

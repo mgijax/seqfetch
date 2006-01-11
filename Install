@@ -202,7 +202,7 @@ fi
 
 logHeading "Getting Configuration options..."
 CONFIG=/tmp/$$.config
-$1 ./Configuration sh > $CONFIG
+$1 ./Configuration sh > $CONFIG 2>/dev/null
 . $CONFIG
 rm -f $CONFIG
 

@@ -41,6 +41,16 @@ import sys
 if '.' not in sys.path:
     sys.path.insert (0, '.')
 
+# add the MGI standard library directory to the PythonPath so that we can find
+# the standard Configuration.py and ignoreDeprecation modules:
+MGI_LIBS = '/usr/local/mgi/live/lib/python'
+if MGI_LIBS not in sys.path:
+	sys.path.insert (0, MGI_LIBS)
+
+# for now, ignore any deprecation errors that could be caused by the
+# migration to Python 2.4.2 -- we'll fix them later
+import ignoreDeprecation
+
 # MGI Python libraries
 
 #################
