@@ -46,7 +46,7 @@ LINE_LENGTH	60
 OVERLAP_LENGTH	10000
 
 # GCG Server
-GCG_SERVER  grendel.jax.org
+GCG_SERVER  wiglaf.jax.org
 
 # Account name on GCG server
 GCG_ACCOUNT mgiusr
