@@ -26,17 +26,17 @@ PYTHON		/usr/local/bin/python
 TMPDIR         /tmp
 
 # Absolute path to the Yank usage log file
-USAGE_LOG      /usr/local/mgi/seqfetch/logs/seqfetch_usage.log
+USAGE_LOG      /usr/local/mgi/live/seqfetch/logs/seqfetch_usage.log
 
 # Absolute path to the Yank error log file
-ERROR_LOG      /usr/local/mgi/seqfetch/logs/seqfetch_error.log
+ERROR_LOG      /usr/local/mgi/live/seqfetch/logs/seqfetch_error.log
 
 # Run in debug mode? (0/1)
 DEBUG	0
 
 # colon-delimited list of directories containing Python libraries, including
 # the lib/python directory under this installation directory
-LIBDIRS		/usr/local/mgi/lib/python/:/usr/local/mgi/mass/dev/lib/python/:/usr/local/mgi/seqfetch/lib/python/
+LIBDIRS		/usr/local/mgi/live/lib/python/:/usr/local/mgi/mass/dev/lib/python/:/usr/local/mgi/live/seqfetch/lib/python/
 
 
 # Line length for FASTA format sequences returned by tool
@@ -66,7 +66,7 @@ NIBFRAGDIR /usr/local/bin
 # Directory for .nib chromosome files
 # (files need to be named like '1.fa.nib' where
 # '1' is the chromosome number)
-NIBDBS /net/hobbiton/data/research/dna/mouse_build_33_nib
+NIBDBS /net/hobbiton/data/research/dna/mouse_build_36_nib
 
 # Which part of the NIBDBS not to display to users
 GENOMIC_PATH /net/hobbiton/data/research/
