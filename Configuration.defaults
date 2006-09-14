@@ -36,7 +36,7 @@ DEBUG	0
 
 # colon-delimited list of directories containing Python libraries, including
 # the lib/python directory under this installation directory
-LIBDIRS		/usr/local/mgi/live/lib/python/:/usr/local/mgi/mass/dev/lib/python/:/usr/local/mgi/live/seqfetch/lib/python/
+LIBDIRS		/usr/local/mgi/live/lib/python/:/usr/local/mgi/live/seqfetch/lib/python/
 
 
 # Line length for FASTA format sequences returned by tool
