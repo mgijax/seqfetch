@@ -447,11 +447,11 @@ def mapToLogicalDB(id_db):
         id_db = "TrEMBL"
     elif id_db == "sptrembl":
         id_db = "SWISS-PROT"
-    elif id_db == "tigrmgi":
+    elif id_db == "dfcimgi":
         id_db = "DFCI Mouse Gene Index"
-    elif id_db == "tigrrgi":
+    elif id_db == "dfcirgi":
         id_db = "DFCI Rat Gene Index"
-    elif id_db == "tigrhgi":
+    elif id_db == "dfcihgi":
         id_db = "DFCI Human Gene Index"
     elif id_db == "dotsm":
         id_db = "DoTS Mouse"
