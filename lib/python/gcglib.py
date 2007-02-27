@@ -310,11 +310,11 @@ def generateGCGListFile(tablist):
                 gcgline = "refseqall:%s" % id
             elif id_db == "SWISS-PROT" or id_db == "TrEMBL":
                 gcgline = "sptrnrdb:%s" % id
-            elif id_db == "TIGR Mouse Gene Index":
+            elif id_db == "DFCI Mouse Gene Index":
                 gcgline = "tigrmgi:%s" % id
-            elif id_db == "TIGR Rat Gene Index":
+            elif id_db == "DFCI Rat Gene Index":
                 gcgline = "tigrrgi:%s" % id
-            elif id_db == "TIGR Human Gene Index":
+            elif id_db == "DFCI Human Gene Index":
                 gcgline = "tigrhgi:%s" % id
             elif id_db == "DoTS Mouse":
                 # Translate DoTS IDs from 'dt.55133146' to 'dt55133146'
