@@ -11,14 +11,6 @@
 # umask for any files created
 UMASK	026
 
-# UNIX group that the WWW server uses for executing CGI scripts.  Note that
-# the user running Install must be a member of this group (or be root).  See
-# the README.Install file for complete details.
-GROUP		www
-
-# Location of python binary.
-PYTHON		/usr/local/bin/python
-
 # Temporary directory where files are created that contain the
 # query sequence for BLAST, and also where DUST and RepeatMasker
 # read their input files.  Also note that RepeatMasker will make
