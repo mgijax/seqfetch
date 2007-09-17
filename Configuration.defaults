@@ -8,6 +8,9 @@
 # Make sure you run Install any time you edit the Configuration file.  #
 ########################################################################
 
+# Path to Global Config file
+GLOBAL_CONFIG   /usr/local/mgi/live/mgiconfig/web/GlobalConfig
+
 # umask for any files created
 UMASK	026
 
