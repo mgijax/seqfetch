@@ -10,7 +10,7 @@
 
 # Path to Global Config file
 MGICONFIG_PATH  /usr/local/mgi/live/mgiconfig/
-GLOBAL_CONFIG   {$MGICONFIG_PATH}web/GlobalConfig
+GLOBAL_CONFIG   ${MGICONFIG_PATH}web/GlobalConfig
 
 # umask for any files created
 UMASK	026
