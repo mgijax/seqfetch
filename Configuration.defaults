@@ -8,16 +8,12 @@
 # Make sure you run Install any time you edit the Configuration file.  #
 ########################################################################
 
+# Path to Global Config file
+MGICONFIG_PATH  /usr/local/mgi/live/mgiconfig/
+GLOBAL_CONFIG   ${MGICONFIG_PATH}web/GlobalConfig
+
 # umask for any files created
 UMASK	026
-
-# UNIX group that the WWW server uses for executing CGI scripts.  Note that
-# the user running Install must be a member of this group (or be root).  See
-# the README.Install file for complete details.
-GROUP		www
-
-# Location of python binary.
-PYTHON		/usr/local/bin/python
 
 # Temporary directory where files are created that contain the
 # query sequence for BLAST, and also where DUST and RepeatMasker
@@ -62,14 +58,6 @@ LOCAL_TEMP_DIR /usr/tmp
 
 # Directory for nibFrag program
 NIBFRAGDIR /usr/local/bin
-
-# Directory for .nib chromosome files
-# (files need to be named like '1.fa.nib' where
-# '1' is the chromosome number)
-NIBDBS /net/hobbiton/data/research/dna/mouse_build_36_nib
-
-# Which part of the NIBDBS not to display to users
-GENOMIC_PATH /net/hobbiton/data/research/
 
 # Maximum number of sequences that may be retrieved
 MAX_SEQS 1000
