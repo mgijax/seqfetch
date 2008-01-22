@@ -12,6 +12,8 @@
 MGICONFIG_PATH  /usr/local/mgi/live/mgiconfig/
 GLOBAL_CONFIG   ${MGICONFIG_PATH}web/GlobalConfig
 
+INSTALL_DIR   /usr/local/mgi/live/seqfetch/
+
 # umask for any files created
 UMASK	026
 
@@ -22,10 +24,10 @@ UMASK	026
 TMPDIR         /tmp
 
 # Absolute path to the Yank usage log file
-USAGE_LOG      /usr/local/mgi/live/seqfetch/logs/seqfetch_usage.log
+USAGE_LOG      ${INSTALL_DIR}logs/seqfetch_usage.log
 
 # Absolute path to the Yank error log file
-ERROR_LOG      /usr/local/mgi/live/seqfetch/logs/seqfetch_error.log
+ERROR_LOG      ${INSTALL_DIR}logs/seqfetch_error.log
 
 # Run in debug mode? (0/1)
 DEBUG	0
