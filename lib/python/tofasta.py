@@ -38,18 +38,19 @@ import regsub
 import regex
 import sys
 
-
 from types import *
 
 # MGI Python libraries
 
-
 # Sequence Retrieval Tool library
 
 import CGInocontenttype
-import gcglib
+import EmbossClient
 import genomelib
 import tofastalib
+
+ec = EmbossClient.EmbossClient(config)
+error = ec.error
 
 # Profiler library
 
@@ -79,7 +80,6 @@ class ToFASTACGI (CGInocontenttype.CGI):
     # DOES: fetches the sequence from the remote web site and returns
     #       results to the user.
 
-    error = gcglib.error
     genomeerror = genomelib.genomeerror
 
     def main (self):
@@ -96,7 +96,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
         profiler = Profiler.Profiler()
 
         # Initialize debug parameter
-        debug = '0'
+        debug = config.lookup('DEBUG')
 
         parms = self.get_parms()
 
@@ -119,11 +119,9 @@ class ToFASTACGI (CGInocontenttype.CGI):
             profiler.stamp('After parseParameters')
 
             # send the output to the user
-
             output = [sequence]
-
-
-        except (self.error), message:
+		
+        except (error), message:
             # Give an error screen to the user which passes
             # along the message which was raised with the
             # exception.
@@ -131,7 +129,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
             list = [
                 '*****',
                 'An error occurred while trying to retrieve your ' + \
-                'sequence(s) from our GCG repository.',
+                'sequence(s) from our EMBOSS repository.',
                 '-----',
                 '%s' % message,
                 '*****'
@@ -142,7 +140,6 @@ class ToFASTACGI (CGInocontenttype.CGI):
             # The call to writeToErrorLog() may raise an IOError
             # which we allow the CGI object's error handler t
             # catch.
-
             tofastalib.writeToErrorLog (message,config)
 
         for line in output:
@@ -191,7 +188,7 @@ def parseParameters (
     strand = '+'
     upfile = ''
     genomesequence = ''
-    gcgsequence = ''
+    embosssequence = ''
     sequence = ''
     debug = ''
     inputSeqList = []
@@ -326,10 +323,10 @@ Please specify the sequence you wish to retrieve by only one method.'''
 
     # Separate upfile into lists of non-genome-build sequences
     # and genome-build sequences
-    gcgupfile,genomeupfile = separateInputFile(upfile)
+    embossfile,genomeupfile = separateInputFile(upfile)
 
     failedgenomemessage = ''
-    failedgcgmessage = ''
+    failedembossmessage = ''
 
     # Stamp time
     profiler.stamp('Before call to genomelib.getSequences')
@@ -360,46 +357,30 @@ Please specify the sequence you wish to retrieve by only one method.'''
 
     # Retrieve Non-Genome Build Sequences
     try:
-         if gcgupfile != '':
-             # Translate the upfile into a properly formatted GCG list file
-             gcglistfile = gcglib.generateGCGListFile(gcgupfile)
+         if embossfile != '':
+			 embosssequence, failedembossseqs = ec.getSequences(embossfile)
 
              # Stamp time
-             profiler.stamp('After call to gcglib.generateGCGListFile')
+			 profiler.stamp('After call to embosslib.getSequences')
 
-             # Check to see if any sequences have been split by GCG
-             checkedlistfile,profiler = \
-                 gcglib.checkSeqs(gcglistfile,config,profiler)
-
-             # Stamp time
-             profiler.stamp('After call to gcglib.checkSeqs')
-
-             # Run ToFASTA
-             gcgsequence,failedgcgseqs,profiler = \
-                 gcglib.getSequences (checkedlistfile,gcglistfile,\
-                 config,profiler)
-
-             # Stamp time
-             profiler.stamp('After call to gcglib.getSequences')
-
-             if failedgcgseqs != '\n':
-                failedgcgmessage = "The Sequence Retrieval Tool failed " + \
-                    "to find these sequences:\n%s" % failedgcgseqs
-
-    except gcglib.error, message:
+			 if failedembossseqs != '\n':
+				failedembossmessage = "The Sequence Retrieval Tool failed " + \
+					"to find these sequences:\n%s" % failedembossseqs
+			
+    except ec.error, message:
         raise ToFASTACGI.error, \
             'Error in retrieving sequences.\n' + message
 
-    if gcgsequence == "":
+    if embosssequence == "":
         sequence = genomesequence
     else:
-        sequence = string.rstrip(gcgsequence) + "\n" + genomesequence
+        sequence = string.rstrip(embosssequence) + "\n" + genomesequence
 
-    if (failedgenomemessage != '') or (failedgcgmessage != ''):
+    if (failedgenomemessage != '') or (failedembossmessage != ''):
         print "*****\n" + \
               "An error occurred while trying to retrieve your " + \
-              "sequence(s) from our GCG repository.\n-----\n" + \
-              failedgenomemessage + failedgcgmessage + "*****"
+              "sequence(s) from our EMBOSS repository.\n-----\n" + \
+              failedgenomemessage + failedembossmessage + "*****"
 
     return sequence,profiler,debug
 

@@ -94,3 +94,7 @@ def writeToUsageLog (logfilename):
         fd.write (entry)
         fd.close ()
         return
+
+def writeToErrorLogDebug(s,	config):
+	if config.lookup('DEBUG') == '1':
+		writeToErrorLog ('DEBUG: ' + s, config)
