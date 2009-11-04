@@ -119,6 +119,9 @@ class EmbossClient:
 		if config:
 			self.config = config
 		
+		# instantiate web service client
+		self.webservice = httplib.HTTP( self.config.lookup('EMBOSS_HOST') )
+		
 		return
 	
 	
@@ -255,18 +258,17 @@ class EmbossClient:
 			# a sequence is returned
 			for req in requests:
 				# construct the header and send the request
-				webservice = httplib.HTTP( self.config.lookup('EMBOSS_HOST') )
-				webservice.putrequest( "POST", self.config.lookup('EMBOSS_URL') )
-				webservice.putheader( "Host", self.config.lookup('EMBOSS_HOST') )
-				webservice.putheader("Content-type","text/xml; charset=\"UTF-8\"")
-				webservice.putheader( "Content-length", "%d" % len(req) )
-				webservice.putheader( "SOAPAction", "org:runAndWaitFor" )
-				webservice.endheaders()
-				webservice.send(req)
+				self.webservice.putrequest( "POST", self.config.lookup('EMBOSS_URL') )
+				self.webservice.putheader( "Host", self.config.lookup('EMBOSS_HOST') )
+				self.webservice.putheader("Content-type","text/xml; charset=\"UTF-8\"")
+				self.webservice.putheader( "Content-length", "%d" % len(req) )
+				self.webservice.putheader( "SOAPAction", "org:runAndWaitFor" )
+				self.webservice.endheaders()
+				self.webservice.send(req)
 				
 				# get the response from the web service and parse the reply
-				statuscode, statusmessage, header = webservice.getreply()
-				f = webservice.getfile()
+				statuscode, statusmessage, header = self.webservice.getreply()
+				f = self.webservice.getfile()
 				seq = self.__parseReply(lxml.etree.parse(f))
 				f.close()
 				
@@ -312,7 +314,7 @@ class EmbossClient:
 			else:
 				# no sequence found, return None
 				
-				# enable if you want to see soaplab output
+				# enable if you want to see soaplab output, caution: verbose
 				# tofastalib.writeToErrorLogDebug (report[0].text, self.config)
 				return None
 		else:
