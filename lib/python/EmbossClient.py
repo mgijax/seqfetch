@@ -95,7 +95,7 @@ class EmbossClient:
 	# the key is the sequence type, and the value is a list of query 
 	# strings that the id will be inserted into.  the query strings are    
 	# in database:id format. queries will be run in the order defined.
-	databases = {"Sequence DB":["gbnew:%s", "genbank:%s"], \
+	databases = {"Sequence DB":["gbnew:%s", "gball:%s"], \
 		"RefSeq":["refseqAll:%s"], \
 		"SWISS-PROT":["sprot:%s"], \
 		"TrEMBL":["tr:%s"], \
@@ -282,6 +282,30 @@ class EmbossClient:
 		
 		return
 	
+	def __convertCase(self, 
+				seq  # 
+				):
+		newseq = ''
+		
+		for line in seq.split('\n'):
+			if line != '':			
+				if  not line.startswith('>'):
+					newseq = newseq + line.upper()
+				else:
+					newseq = newseq + line
+				newseq = newseq + '\n'
+		
+		
+		lines = string.split (seq, '\n')[1:]
+		lengths = map (len, map (string.strip, lines))
+		sum = 0
+		for i in lengths:
+			sum = sum + i
+		tofastalib.writeToErrorLog (string.split (newseq, '\n')[1:], self.config)
+		tofastalib.writeToErrorLog (sum, self.config)
+		
+		return newseq
+	
 	
 	def __parseReply(self, 
 					reply  # 
@@ -310,7 +334,7 @@ class EmbossClient:
 			if len(outseq) > 0:
 				for seq in outseq:
 					if seq is not None:
-						return seq.text
+						return self.__convertCase(seq.text)
 			else:
 				# no sequence found, return None
 				
@@ -360,4 +384,4 @@ class EmbossClient:
 			raise self.error, '' + message
 		
 		# return results
-		return '\n%s' % '\n'.join(replies), '%s\n' % ','.join(missing)
+		return '%s' % '\n'.join(replies), '%s\n' % ','.join(missing)
