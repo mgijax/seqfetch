@@ -50,7 +50,6 @@ import genomelib
 import tofastalib
 
 ec = EmbossClient.EmbossClient(config)
-error = ec.error
 
 # Profiler library
 
@@ -80,6 +79,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
     # DOES: fetches the sequence from the remote web site and returns
     #       results to the user.
 
+    error = ec.error
     genomeerror = genomelib.genomeerror
 
     def main (self):
@@ -121,7 +121,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
             # send the output to the user
             output = [sequence]
 		
-        except (error), message:
+        except (self.error), message:
             # Give an error screen to the user which passes
             # along the message which was raised with the
             # exception.
