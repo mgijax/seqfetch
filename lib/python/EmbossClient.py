@@ -103,7 +103,12 @@ class EmbossClient:
 		"DFCI Rat Gene Index":["rgi:%s"], \
 		"DFCI Human Gene Index":["hgi:%s"], \
 		"DoTS Mouse":["dots:%s"], \
-		"NIA Mouse Gene Index":["nia:%s"]}
+		"NIA Mouse Gene Index":["nia:%s"],
+		"vega_mus_prot":["vega_mus_prot:%s"],
+		"vega_mus_cdna":["vega_mus_cdna:%s"],
+		"ensembl_mus_prot":["ensembl_mus_prot:%s"],
+		"ensembl_mus_cdna":["ensembl_mus_cdna:%s"],
+		}
 	
 	def __init__(self, config):
 		"""
@@ -200,7 +205,7 @@ class EmbossClient:
 		
 		# regular expression to capture sequence type, id, 
 		# begin coordinates, and end coordinates
-		tablistre = re.compile("([A-Za-z\s\-]+)\t" +\
+		tablistre = re.compile("([A-Za-z\s\-_]+)\t" +\
 			"([A-Za-z0-9_\.\-]+)\t*([0-9]*)\t*([0-9]*)")
 		
 		# parse list of request ids
