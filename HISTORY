@@ -1,7 +1,12 @@
+TAG: seqfetch-4-3-3-1
+DATE: 03/15/10
+STAFF: marka
+CHANGES: merging tr9782 to trunk
+
 TAG: seqfetch-tr9782-BP
 DATE: 12/21/09
 STAFF: marka
-CHANGES: creating branch got tr8087 maintenance release
+CHANGES: creating branch got tr9782 maintenance release
 
 TAG: seqfetch-4-0-0-x (2)
 DATE: 1/8/08
