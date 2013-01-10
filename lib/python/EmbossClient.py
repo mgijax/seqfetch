@@ -95,8 +95,8 @@ class EmbossClient:
 	# the key is the sequence type, and the value is a list of query 
 	# strings that the id will be inserted into.  the query strings are    
 	# in database:id format. queries will be run in the order defined.
-	databases = {"Sequence DB":["gbnew:%s", "gball:%s"], \
-		"RefSeq":["refseqAll:%s"], \
+	databases = {"Sequence DB":["genbank:%s"], \
+		"RefSeq":["refseqProt:%s", "refseqRna"], \
 		"SWISS-PROT":["sprot:%s"], \
 		"TrEMBL":["tr:%s"], \
 		"DFCI Mouse Gene Index":["mgi:%s"], \

@@ -1,3 +1,10 @@
+TAG: seqfetch-5-1-1-1
+DATE: 01/10/2012
+STAFF: sc
+CHANGES: updated EmbossClient.py:
+1) changed databases Sequence DB from: gbAll to: genbank, tpa
+2) changed databases Refseq from: refseqAll to : refseqProt, refseqRna
+
 TAG: seqfetch-4-3-3-1
 DATE: 03/15/10
 STAFF: marka
