@@ -43,7 +43,7 @@ LINE_LENGTH	60
 OVERLAP_LENGTH	10000
 
 # EMBOSS Server
-EMBOSS_HOST  hygelac:8080
+EMBOSS_HOST  bhmgiem01:8080
 
 # EMBOSS Server
 EMBOSS_URL  http://${EMBOSS_HOST}/soaplab2/services/edit.seqret
