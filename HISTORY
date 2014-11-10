@@ -1,3 +1,9 @@
+TAG: seqfetch-5-1-1-3
+DATE: 11/10/2014
+STAFF: lnh
+CHANGES: TR11627 - Move Emboss to MGI server
+1) changed EMBOSS_HOST from: hygelac to: bhmgiem01
+ 
 TAG: seqfetch-5-1-1-2
 TAG: seqfetch-5-1-1-1
 DATE: 01/10/2012
