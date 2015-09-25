@@ -99,11 +99,6 @@ class EmbossClient:
 		"RefSeq":["refseqProt:%s", "refseqRna:%s"], \
 		"SWISS-PROT":["sprot:%s"], \
 		"TrEMBL":["tr:%s"], \
-		"DFCI Mouse Gene Index":["mgi:%s"], \
-		"DFCI Rat Gene Index":["rgi:%s"], \
-		"DFCI Human Gene Index":["hgi:%s"], \
-		"DoTS Mouse":["dots:%s"], \
-		"NIA Mouse Gene Index":["nia:%s"],
 		"vega_mus_prot":["vega_mus_prot:%s"],
 		"vega_mus_cdna":["vega_mus_cdna:%s"],
 		"ensembl_mus_prot":["ensembl_mus_prot:%s"],
