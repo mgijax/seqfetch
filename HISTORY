@@ -1,3 +1,9 @@
+TAG: seqfetch-6-0-6-1
+DATE: 10/12/2016
+STAFF: dbm
+CHANGES: 
+1) Conversion from cvs to git
+ 
 TAG: seqfetch-6-0-2-1
 TAG: seqfetch-tr12070-1
 DATE: 12/02/2015
