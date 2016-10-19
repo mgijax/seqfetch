@@ -1,2 +1,11 @@
 # .gitignore
 Configuration
+admin/Configuration.pyc
+admin/python
+bin/python
+lib/python/*.pyc
+logs/Install.log
+logs/seqfetch_error.log
+logs/seqfetch_usage.log
+www/Configuration.pyc
+www/python
