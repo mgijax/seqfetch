@@ -99,8 +99,6 @@ class EmbossClient:
 		"RefSeq":["refseqProt:%s", "refseqRna:%s"], \
 		"SWISS-PROT":["sprot:%s"], \
 		"TrEMBL":["tr:%s"], \
-		"vega_mus_prot":["vega_mus_prot:%s"],
-		"vega_mus_cdna":["vega_mus_cdna:%s"],
 		"ensembl_mus_prot":["ensembl_mus_prot:%s"],
 		"ensembl_mus_cdna":["ensembl_mus_cdna:%s"],
 		}
