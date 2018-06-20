@@ -46,6 +46,7 @@ from types import *
 
 import CGInocontenttype
 import EmbossClient
+import MouseMineClient
 import genomelib
 import tofastalib
 
@@ -323,7 +324,7 @@ Please specify the sequence you wish to retrieve by only one method.'''
 
     # Separate upfile into lists of non-genome-build sequences
     # and genome-build sequences
-    embossfile,genomeupfile = separateInputFile(upfile)
+    embossfile,genomeupfile,mousemineFile = separateInputFile(upfile)
 
     failedgenomemessage = ''
     failedembossmessage = ''
@@ -376,11 +377,34 @@ Please specify the sequence you wish to retrieve by only one method.'''
     else:
         sequence = string.rstrip(embosssequence) + "\n" + genomesequence
 
-    if (failedgenomemessage != '') or (failedembossmessage != ''):
+    # Retrieve strain gene sequences from MouseMine
+    mmFasta = ''
+    mmFailed = ''
+    if mousemineFile:
+        ids = []
+        for line in mousemineFile.split('\n'):
+            fields = line.split('\t')
+            if len(fields) > 1:
+                ids.append(fields[1])
+            
+        try:
+            mmc = MouseMineClient.MouseMineClient(config['MOUSEMINE_URL'])
+            mmFasta, mmFailed = mmc.getFasta(ids)
+            if mmFailed:
+                mmFailed = mmFailed + '\n'
+            
+            sequence = sequence.rstrip() + '\n' + mmFasta
+
+        except:
+            mmFailed = 'Retrieval from MouseMine failed (%s): %s' % (ids, str(sys.exc_info()[1]))
+
+    # error reporting
+    
+    if (failedgenomemessage != '') or (failedembossmessage != '') or (mmFailed != ''):
         print "*****\n" + \
               "An error occurred while trying to retrieve your " + \
               "sequence(s) from our EMBOSS repository.\n-----\n" + \
-              failedgenomemessage + failedembossmessage + "*****"
+              failedgenomemessage + failedembossmessage + mmFailed + "*****"
 
     return sequence,profiler,debug
 
@@ -390,31 +414,33 @@ def separateInputFile(upfile):
     # Purpose: Parse the list of sequences to retrieve and separate
     #       that list in sequences that are from the NCBI genome
     #       build or not, and convert to GCG list files.
-    # Returns: Two lists of sequences:
-    #       1. sequences to retrieve from NCBI genome build
-    #          2. sequences to retrieve from elsewhere (i.e., GCG)
+    # Returns: Three lists of sequences:
+    #    1. sequences to retrieve from NCBI genome build
+    #    2. sequences to retrieve from elsewhere (i.e., GCG)
+    #    3. sequences to retrieve from MouseMine (strain gene sequences) 
     # Assumes: nothing
     # Effects: nothing
     # Throws:  nothing
 
     gcgupfile = '..\n'
     genomeupfile = ''
+    mousemineFile = ''
 
     for line in string.split(upfile,'\n'): 
         if line != '':
            tokens = string.split(line,'\t')
            if tokens[0] == "mousegenome":
-               genomeupfile = genomeupfile + \
-                   string.joinfields(tokens,'\t') + '\n'
+               genomeupfile = genomeupfile + string.joinfields(tokens,'\t') + '\n'
+           elif tokens[0] == 'straingene':
+               mousemineFile = mousemineFile + string.joinfields(tokens,'\t') + '\n'
            else:
-               gcgupfile = gcgupfile + \
-                   string.joinfields(tokens[:-1],'\t') + '\n'
+               gcgupfile = gcgupfile + string.joinfields(tokens[:-1],'\t') + '\n'
 
     # reset 'empty' list files to make testing elsewhere easier
     if gcgupfile == "..\n":
         gcgupfile = ""
 
-    return gcgupfile,genomeupfile
+    return gcgupfile,genomeupfile,mousemineFile
 
 def mapToLogicalDB(id_db):
 
