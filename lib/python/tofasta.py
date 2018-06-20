@@ -393,7 +393,10 @@ Please specify the sequence you wish to retrieve by only one method.'''
             if mmFailed:
                 mmFailed = mmFailed + '\n'
             
-            sequence = sequence.rstrip() + '\n' + mmFasta
+            if sequence:
+                sequence = sequence.rstrip() + '\n' + mmFasta
+            else:
+                sequence = mmFasta
 
         except:
             mmFailed = 'Retrieval from MouseMine failed (%s): %s' % (ids, str(sys.exc_info()[1]))
