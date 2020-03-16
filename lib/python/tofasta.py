@@ -102,9 +102,9 @@ class ToFASTACGI (CGInocontenttype.CGI):
         parms = self.get_parms()
 
         if debug != '0':
-            print "Input Parms"
-            print parms
-            print " "
+            print("Input Parms")
+            print(parms)
+            print(" ")
 
         # Stamp time
         profiler.stamp('After self.get_parms')
@@ -121,8 +121,8 @@ class ToFASTACGI (CGInocontenttype.CGI):
 
             # send the output to the user
             output = [sequence]
-		
-        except (self.error), message:
+                
+        except (self.error) as message:
             # Give an error screen to the user which passes
             # along the message which was raised with the
             # exception.
@@ -144,7 +144,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
             tofastalib.writeToErrorLog (message,config)
 
         for line in output:
-            print line
+            print(line)
 
         # If in debug mode, then write elapsed time profile.
         if debug == '1':
@@ -201,31 +201,28 @@ def parseParameters (
     # check the parameters for error conditions and raise an exception
     # if any are found
 
-    if not (parms.has_key('upfile') or parms.has_key('seqs')):
-        raise ToFASTACGI.error, \
-            '''Please select at least one sequence.
+    if not ('upfile' in parms or 'seqs' in parms):
+        raise ToFASTACGI.error('''Please select at least one sequence.
 
 To make a selection, click the Back button, click the checkbox next to each desired
-sequence, and then download in FASTA format.'''
+sequence, and then download in FASTA format.''')
 
-    if parms.has_key('upfile') and parms.has_key('seqs'):
+    if 'upfile' in parms and 'seqs' in parms:
         if parms['upfile'] == '' and parms['seqs'] == '':
-            raise ToFASTACGI.error, \
-                '''Input to Sequence Retrieval Tool incorrect.
-You have to enter a sequence specification or upload a file.'''
+            raise ToFASTACGI.error('''Input to Sequence Retrieval Tool incorrect.
+You have to enter a sequence specification or upload a file.''')
         elif parms['upfile'] != '' and parms['seqs'] != '':
-            raise ToFASTACGI.error, \
-                '''Input to Sequence Retrieval Tool incorrect.
+            raise ToFASTACGI.error('''Input to Sequence Retrieval Tool incorrect.
 You have entered both a sequence specification and uploaded a file.
-Please specify the sequence you wish to retrieve by only one method.'''
+Please specify the sequence you wish to retrieve by only one method.''')
 
     # fill in values from the submitted parameters
 
-    if parms.has_key ('seqs'):
+    if 'seqs' in parms:
         seqs = parms['seqs']
-    if parms.has_key ('returnErrors'):
+    if 'returnErrors' in parms:
         returnerrors = string.strip(parms['returnErrors'])
-    if parms.has_key ('debug'):
+    if 'debug' in parms:
         debug = string.strip(parms['debug'])
 
     # process seqs to assign values
@@ -235,7 +232,7 @@ Please specify the sequence you wish to retrieve by only one method.'''
             # test to make sure maximum number of requested sequences not
             # exceeded
             if len(seqs) > string.atoi(config.lookup('MAX_SEQS')):
-                raise ToFASTACGI.error, 'Please contact MGI User Support (mgi-help@informatics.jax.org) to retrieve more than %s sequences.' % config.lookup('MAX_SEQS')
+                raise ToFASTACGI.error('Please contact MGI User Support (mgi-help@informatics.jax.org) to retrieve more than %s sequences.' % config.lookup('MAX_SEQS'))
 
             # MGI 3.4 release
             # There can now be multiple sequence parameters bound into a 
@@ -253,7 +250,7 @@ Please specify the sequence you wish to retrieve by only one method.'''
                         string.split(seqitem,'!')
 
                 except:
-                    raise ToFASTACGI.error, 'One of the requested sequences %s was not specified properly.  Please resubmit your search.' % seqitem
+                    raise ToFASTACGI.error('One of the requested sequences %s was not specified properly.  Please resubmit your search.' % seqitem)
 
                 if flank == '':
                     flank = '0'
@@ -293,14 +290,14 @@ Please specify the sequence you wish to retrieve by only one method.'''
                     upfile = upfile + "%s\t%s\t\t\t%s\n" % (id_db,id,strand)
 
     # process upfile to assign values
-    if parms.has_key ('upfile') and upfile == '':
+    if 'upfile' in parms and upfile == '':
         upfile = parms['upfile']
         outupfile = ''
         upfile_lines = string.split(upfile,'\n')
         # test to make sure maximum number of requested sequences not
         # exceeded
         if len(upfile_lines) > string.atoi(config.lookup('MAX_SEQS')):
-            raise ToFASTACGI.error, 'Please contact MGI User Support (mgi-help@informatics.jax.org) to retreived more than %s sequences.' % config.lookup('MAX_SEQS')
+            raise ToFASTACGI.error('Please contact MGI User Support (mgi-help@informatics.jax.org) to retreived more than %s sequences.' % config.lookup('MAX_SEQS'))
         for line in upfile_lines:
             if line != '':
                 [id_db,id,begin,coorend,strand,flank] = string.split(line,'!')
@@ -349,28 +346,27 @@ Please specify the sequence you wish to retrieve by only one method.'''
                     "to find this genome sequence:\n%s" % failedseqmsg
 
             # Remove full path from display...  
-            if config.has_key('GENOMIC_PATH') :
-		genomesequence = regsub.gsub(config['GENOMIC_PATH'],
+            if 'GENOMIC_PATH' in config :
+                genomesequence = regsub.gsub(config['GENOMIC_PATH'],
                     '',genomesequence) 
 
     except:
-        raise ToFASTACGI.error, 'Error in retrieving genome build sequences.'
+        raise ToFASTACGI.error('Error in retrieving genome build sequences.')
 
     # Retrieve Non-Genome Build Sequences
     try:
          if embossfile != '':
-			 embosssequence, failedembossseqs = ec.getSequences(embossfile)
+                         embosssequence, failedembossseqs = ec.getSequences(embossfile)
 
              # Stamp time
-			 profiler.stamp('After call to embosslib.getSequences')
+                         profiler.stamp('After call to embosslib.getSequences')
 
-			 if failedembossseqs != '\n':
-				failedembossmessage = "The Sequence Retrieval Tool failed " + \
-					"to find these sequences:\n%s" % failedembossseqs
-			
-    except ec.error, message:
-        raise ToFASTACGI.error, \
-            'Error in retrieving sequences.\n' + message
+                         if failedembossseqs != '\n':
+                                failedembossmessage = "The Sequence Retrieval Tool failed " + \
+                                        "to find these sequences:\n%s" % failedembossseqs
+                        
+    except ec.error as message:
+        raise ToFASTACGI.error('Error in retrieving sequences.\n' + message)
 
     if embosssequence == "":
         sequence = genomesequence
@@ -404,10 +400,10 @@ Please specify the sequence you wish to retrieve by only one method.'''
     # error reporting
     
     if (failedgenomemessage != '') or (failedembossmessage != '') or (mmFailed != ''):
-        print "*****\n" + \
+        print("*****\n" + \
               "An error occurred while trying to retrieve your " + \
               "sequence(s) from our EMBOSS repository.\n-----\n" + \
-              failedgenomemessage + failedembossmessage + mmFailed + "*****"
+              failedgenomemessage + failedembossmessage + mmFailed + "*****")
 
     return sequence,profiler,debug
 
@@ -482,7 +478,7 @@ def cleanInputParms(inputParms):
     seqReg   = regex.compile('seq[0-9]+')  
     flankReg = regex.compile('flank[0-9]+')
 
-    cgiKeys  = inputParms.keys()
+    cgiKeys  = list(inputParms.keys())
 
     # pull out flanking values from input parms, to be matched to seqN later
     for key in cgiKeys:
@@ -497,7 +493,7 @@ def cleanInputParms(inputParms):
 
         # Origional input parameter API spec
         if key == 'seqs':
-            if type(inputParms['seqs']) == types.StringType:
+            if type(inputParms['seqs']) == bytes:
                 seqList.append(inputParms['seqs'])
             else:
                 for seqsValue in inputParms['seqs']:
@@ -507,10 +503,10 @@ def cleanInputParms(inputParms):
         if seqReg.match(key) != -1:
 
             # since only string parms can have flanking...
-            if type(inputParms[key]) == types.StringType:
+            if type(inputParms[key]) == bytes:
 
                 # Determine if this parameter needs flank appended
-                if key[3:] in flankValues.keys():
+                if key[3:] in list(flankValues.keys()):
                     seqList.append(inputParms[key] + flankValues[seqParmNum])
                 else:
                     seqList.append(inputParms[key])

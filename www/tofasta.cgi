@@ -45,7 +45,7 @@ if '.' not in sys.path:
 # the standard Configuration.py and ignoreDeprecation modules:
 MGI_LIBS = '/usr/local/mgi/live/lib/python'
 if MGI_LIBS not in sys.path:
-	sys.path.insert (0, MGI_LIBS)
+    sys.path.insert (0, MGI_LIBS)
 
 # for now, ignore any deprecation errors that could be caused by the
 # migration to Python 2.4.2 -- we'll fix them later
@@ -72,7 +72,7 @@ import tofasta
 # main    #
 ###########
 
-print 'Content-type: text/plain\n'
+print('Content-type: text/plain\n')
 
 if __name__ == '__main__':
     mycgi = tofasta.ToFASTACGI()

@@ -1,8 +1,8 @@
 # Name: tofastalib.py
 # Purpose: provides utility functions for the ToFASTA program
 # Assumes:
-#	that our PYTHONPATH (sys.path) is set properly for us to find the
-#	libraries we import
+#       that our PYTHONPATH (sys.path) is set properly for us to find the
+#       libraries we import
 # Public Functions:
 #       writeToErrorLog(s,config)
 #       writeToUsageLog (
@@ -40,7 +40,7 @@ error = "tofastalib.py error"
 
 def writeToErrorLog (
         s,               # string; line to write to the error log
-	config
+        config
         ):
         # Purpose: write 's' to MouseBLAST's error log, along with the IP
         #       address of the client and the current time
@@ -50,7 +50,7 @@ def writeToErrorLog (
         # Throws: IOError if we cannot write to the file
 
         ip = 'unknown'
-        if os.environ.has_key ('REMOTE_ADDR'):
+        if 'REMOTE_ADDR' in os.environ:
                 ip = os.environ['REMOTE_ADDR']
         timestamp = time.asctime (time.localtime(time.time()))
 
@@ -82,7 +82,7 @@ def writeToUsageLog (logfilename):
         # Throws: IOError if we cannot write to the file
 
         ip = 'unknown'
-        if os.environ.has_key ('REMOTE_ADDR'):
+        if 'REMOTE_ADDR' in os.environ:
                 ip = os.environ['REMOTE_ADDR']
 
         timestamp = time.asctime (time.localtime(time.time()))
@@ -95,6 +95,6 @@ def writeToUsageLog (logfilename):
         fd.close ()
         return
 
-def writeToErrorLogDebug(s,	config):
-	if config.lookup('DEBUG') == '1':
-		writeToErrorLog ('DEBUG: ' + s, config)
+def writeToErrorLogDebug(s,     config):
+        if config.lookup('DEBUG') == '1':
+                writeToErrorLog ('DEBUG: ' + s, config)

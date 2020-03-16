@@ -9,7 +9,7 @@
 
 import sys
 import types
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 class MouseMineClient:
     def __init__ (self, mouseMineUrl):
@@ -29,7 +29,7 @@ class MouseMineClient:
         #    a canonical gene ID, then we convert it to the corresponding C57BL/6J strain
         #    gene ID and request that sequence.
         
-        if type(genes) == types.StringType:
+        if type(genes) == bytes:
             genes = [ genes ]
             
         mapping = self._getCanonicalGeneMapping(genes)
@@ -74,7 +74,7 @@ class MouseMineClient:
         url = self.mouseMineUrl + 'mousemine/service/query/results/fasta'
         args = { 'query' : request, 'view' : view }
 
-        fd = urllib.urlopen(url, urllib.urlencode(args))
+        fd = urllib.request.urlopen(url, urllib.parse.urlencode(args))
         lines = fd.readlines()
         fd.close()
 
@@ -84,7 +84,7 @@ class MouseMineClient:
         # Purpose: Go through the 'response' from MouseMine and convert any IDs that we mapped
         #    back to their original versions.
         
-        for (canonical, strainSpecific) in mapping.items():
+        for (canonical, strainSpecific) in list(mapping.items()):
             response = response.replace(strainSpecific, canonical)
         
         return response
@@ -119,4 +119,4 @@ class MouseMineClient:
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         mmc = MouseMineClient('http://bhmgimm-dev:8080/')
-        print mmc.getFasta(sys.argv[1:])
+        print(mmc.getFasta(sys.argv[1:]))

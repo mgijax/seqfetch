@@ -63,7 +63,7 @@ def getSequences (
             # chromsome number
             chromosome = ''
 
-            # subsequence begin coordinate	
+            # subsequence begin coordinate      
             begin = ''
 
             # subsequence end coordinate
@@ -132,7 +132,7 @@ def getSequences (
 
                 sequences = sequences + string.joinfields(outfilelines,'')
 
-    except genomeerror, message:
-        raise genomeerror, '' + message
+    except genomeerror as message:
+        raise genomeerror('' + message)
 
     return sequences, failedseqs

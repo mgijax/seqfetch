@@ -2,12 +2,12 @@
 # Purpose: provides utility functions for dealing with FASTA formatted
 #       sequences
 # Assumes:
-#	that our PYTHONPATH (sys.path) is set properly for us to find the
-#	libraries we import
+#       that our PYTHONPATH (sys.path) is set properly for us to find the
+#       libraries we import
 # Public Functions:
-#	appendSequences (firstseq, secondseq, overlap, line_length)
-#	reformatSeq (sequence, length, description)
-#	getSubSeq (sequence, begin, finish, config)
+#       appendSequences (firstseq, secondseq, overlap, line_length)
+#       reformatSeq (sequence, length, description)
+#       getSubSeq (sequence, begin, finish, config)
 
 ############
 # imports  #
