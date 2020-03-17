@@ -9,7 +9,7 @@
 # Public Functions:
 #    None
 # Private Functions:
-#    parseParameters(params,profiler)
+#    parseParameters(params)
 #    separateInputFile(upfile)
 # Public Classes:
 #    ToFASTACGI
@@ -52,10 +52,6 @@ import tofastalib
 
 ec = EmbossClient.EmbossClient(config)
 
-# Profiler library
-
-import Profiler
-
 ###########################################
 # exception values when 'error' is raised #
 ###########################################
@@ -93,9 +89,6 @@ class ToFASTACGI (CGInocontenttype.CGI):
         #    write the result back to the user.
         # Throws: nothing
 
-        # Instantiate Profiler class to track time different steps take.
-        profiler = Profiler.Profiler()
-
         # Initialize debug parameter
         debug = config.lookup('DEBUG')
 
@@ -106,18 +99,12 @@ class ToFASTACGI (CGInocontenttype.CGI):
             print(parms)
             print(" ")
 
-        # Stamp time
-        profiler.stamp('After self.get_parms')
-
         try:
             # The call to parseParameters() may raise the 'error'
             # exception.  We catch it below and display its
             # accompanying message for the user.
 
-            sequence,profiler,debug = parseParameters (parms,profiler)
-
-            # Stamp time
-            profiler.stamp('After parseParameters')
+            sequence,debug = parseParameters (parms)
 
             # send the output to the user
             output = [sequence]
@@ -146,10 +133,6 @@ class ToFASTACGI (CGInocontenttype.CGI):
         for line in output:
             print(line)
 
-        # If in debug mode, then write elapsed time profile.
-        if debug == '1':
-            profiler.write()
-
         # Write activity to usage log
         tofastalib.writeToUsageLog(config.lookup('USAGE_LOG'))
 
@@ -158,9 +141,8 @@ class ToFASTACGI (CGInocontenttype.CGI):
 ###--- Private Functions ---###
 
 def parseParameters (
-    parms,        # Dictionary of parameters received from an HTML form,
+    parms        # Dictionary of parameters received from an HTML form,
                   # as returned by CGI.get_parms().
-    profiler      # Profiler object to track elapsed time.
     ):
     # Purpose: parse the given set of 'parms' to get and return a tuple
     #    of ten items.  performs error checking to ensure complete and
@@ -326,17 +308,11 @@ Please specify the sequence you wish to retrieve by only one method.''')
     failedgenomemessage = ''
     failedembossmessage = ''
 
-    # Stamp time
-    profiler.stamp('Before call to genomelib.getSequences')
-
     # Retrieve Genome Build Sequences
     try:
         if genomeupfile != '':
             genomesequence,failedgenomeseqs = \
                 genomelib.getSequences (genomeupfile,config)
-
-            # Stamp time
-            profiler.stamp('After call to genomelib.getSequences')
 
             if failedgenomeseqs != '':
                 failedseqmsg = "Chr:%s  Begin:%s  End:%s  Flank:%s\n" \
@@ -357,9 +333,6 @@ Please specify the sequence you wish to retrieve by only one method.''')
     try:
          if embossfile != '':
                          embosssequence, failedembossseqs = ec.getSequences(embossfile)
-
-             # Stamp time
-                         profiler.stamp('After call to embosslib.getSequences')
 
                          if failedembossseqs != '\n':
                                 failedembossmessage = "The Sequence Retrieval Tool failed " + \
@@ -405,7 +378,7 @@ Please specify the sequence you wish to retrieve by only one method.''')
               "sequence(s) from our EMBOSS repository.\n-----\n" + \
               failedgenomemessage + failedembossmessage + mmFailed + "*****")
 
-    return sequence,profiler,debug
+    return sequence,debug
 
 
 def separateInputFile(upfile):
