@@ -122,7 +122,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
             # send the output to the user
             output = [sequence]
                 
-        except (self.error) as message:
+        except Exception as message:
             # Give an error screen to the user which passes
             # along the message which was raised with the
             # exception.
@@ -365,7 +365,7 @@ Please specify the sequence you wish to retrieve by only one method.''')
                                 failedembossmessage = "The Sequence Retrieval Tool failed " + \
                                         "to find these sequences:\n%s" % failedembossseqs
                         
-    except ec.error as message:
+    except Exception as message:
         raise ToFASTACGI.error('Error in retrieving sequences.\n' + message)
 
     if embosssequence == "":
