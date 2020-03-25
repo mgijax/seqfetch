@@ -33,10 +33,9 @@ config = Configuration.get_Configuration ('Configuration', 1)
 import types
 import os
 import time
-import string
-import regsub
-import regex
+import re
 import sys
+import log
 
 from types import *
 
@@ -50,7 +49,9 @@ import MouseMineClient
 import genomelib
 import tofastalib
 
+log.write('Initializing tofasta.py library')
 ec = EmbossClient.EmbossClient(config)
+log.write('Built EmbossClient')
 
 ###########################################
 # exception values when 'error' is raised #
@@ -76,7 +77,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
     # DOES: fetches the sequence from the remote web site and returns
     #       results to the user.
 
-    error = ec.error
+    error = EmbossClient.error
     genomeerror = genomelib.genomeerror
 
     def main (self):
@@ -93,6 +94,14 @@ class ToFASTACGI (CGInocontenttype.CGI):
         debug = config.lookup('DEBUG')
 
         parms = self.get_parms()
+        
+        # convert uploaded bytes to a Python string
+        if 'upfile' in parms:
+            parms['upfile'] = parms['upfile'].decode()
+
+        log.write('Got parameters:')
+        for k in parms.keys():
+            log.write('- %s: %s' % (k, str(parms[k])))
 
         if debug != '0':
             print("Input Parms")
@@ -105,6 +114,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
             # accompanying message for the user.
 
             sequence,debug = parseParameters (parms)
+            log.write('Got sequence')
 
             # send the output to the user
             output = [sequence]
@@ -124,6 +134,7 @@ class ToFASTACGI (CGInocontenttype.CGI):
                 ]
 
             output = list
+            log.write('Caught exception')
 
             # The call to writeToErrorLog() may raise an IOError
             # which we allow the CGI object's error handler t
@@ -132,10 +143,11 @@ class ToFASTACGI (CGInocontenttype.CGI):
 
         for line in output:
             print(line)
+        log.write('Wrote output to user')
 
         # Write activity to usage log
         tofastalib.writeToUsageLog(config.lookup('USAGE_LOG'))
-
+        log.write('Wrote to usage log')
         return
 
 ###--- Private Functions ---###
@@ -202,26 +214,30 @@ Please specify the sequence you wish to retrieve by only one method.''')
 
     if 'seqs' in parms:
         seqs = parms['seqs']
+        log.write('seqs: %s' % seqs)
     if 'returnErrors' in parms:
-        returnerrors = string.strip(parms['returnErrors'])
+        returnerrors = parms['returnErrors'].strip()
     if 'debug' in parms:
-        debug = string.strip(parms['debug'])
+        debug = parms['debug'].strip()
 
     # process seqs to assign values
     if seqs != '':
-        if type(seqs) == ListType:
+        log.write('type(seqs): %s' % type(seqs))
+        if type(seqs) == list:
 
             # test to make sure maximum number of requested sequences not
             # exceeded
-            if len(seqs) > string.atoi(config.lookup('MAX_SEQS')):
+            if len(seqs) > int(config.lookup('MAX_SEQS')):
                 raise ToFASTACGI.error('Please contact MGI User Support (mgi-help@informatics.jax.org) to retrieve more than %s sequences.' % config.lookup('MAX_SEQS'))
 
             # MGI 3.4 release
             # There can now be multiple sequence parameters bound into a 
             # single 'seqs' input field.  This splits them out.
             for inputSeq in seqs:
-                for seq in string.split(inputSeq,seperator):
+                for seq in inputSeq.split(seperator):
                     inputSeqList.append(seq)
+
+            log.write('inputSeqList: %s' % str(inputSeqList))
 
             for seqitem in inputSeqList:
                 try:
@@ -229,10 +245,10 @@ Please specify the sequence you wish to retrieve by only one method.''')
                 # Sept 29, 04
                 # Added chromo input parameter
                     [id_db,id,chromo,begin,coorend,strand,flank] = \
-                        string.split(seqitem,'!')
+                        seqitem.split('!')
 
-                except:
-                    raise ToFASTACGI.error('One of the requested sequences %s was not specified properly.  Please resubmit your search.' % seqitem)
+                except Exception as msg:
+                    raise ToFASTACGI.error('One of the requested sequences %s was not specified properly. (Exception: %s)  Please resubmit your search.' % (seqitem, msg))
 
                 if flank == '':
                     flank = '0'
@@ -252,21 +268,21 @@ Please specify the sequence you wish to retrieve by only one method.''')
                 # of a bug in nigFrag not picking up the first bp
                 if begin != '' and begin != '1':
                     origionalBegin = begin
-                    newBegin = string.atoi(begin) -1
+                    newBegin = int(begin) -1
                     begin = '%s' % newBegin
 
                 id_db = mapToLogicalDB(id_db)
                 if begin != '' and coorend != '':
                     upfile = upfile + "%s\t%s\t%s\t%s\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
-                        string.atoi(coorend)+string.atoi(flank),strand)
+                        (id_db,id,int(begin)-int(flank),\
+                        int(coorend)+int(flank),strand)
                 elif begin != '' and coorend == '':
                     upfile = upfile + "%s\t%s\t%s\t\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
+                        (id_db,id,int(begin)-int(flank),\
                         strand)
                 elif begin == '' and coorend != '':
                     upfile = upfile + "%s\t%s\t\t%s\t%s\n" % \
-                        (id_db,id,string.atoi(coorend)+string.atoi(flank),\
+                        (id_db,id,int(coorend)+int(flank),\
                         strand)
                 else:
                     upfile = upfile + "%s\t%s\t\t\t%s\n" % (id_db,id,strand)
@@ -275,27 +291,27 @@ Please specify the sequence you wish to retrieve by only one method.''')
     if 'upfile' in parms and upfile == '':
         upfile = parms['upfile']
         outupfile = ''
-        upfile_lines = string.split(upfile,'\n')
+        upfile_lines = upfile.split('\n')
         # test to make sure maximum number of requested sequences not
         # exceeded
-        if len(upfile_lines) > string.atoi(config.lookup('MAX_SEQS')):
+        if len(upfile_lines) > int(config.lookup('MAX_SEQS')):
             raise ToFASTACGI.error('Please contact MGI User Support (mgi-help@informatics.jax.org) to retreived more than %s sequences.' % config.lookup('MAX_SEQS'))
         for line in upfile_lines:
             if line != '':
-                [id_db,id,begin,coorend,strand,flank] = string.split(line,'!')
+                [id_db,id,begin,coorend,strand,flank] = line.split('!')
                 id_db = mapToLogicalDB(id_db)
                 if begin != '' and coorend != '' and flank != '':
                     outupfile = outupfile + "%s\t%s\t%s\t%s\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
-                        string.atoi(coorend)+string.atoi(flank),strand)
+                        (id_db,id,int(begin)-int(flank),\
+                        int(coorend)+int(flank),strand)
                 elif begin != '' and flank != '':
                     outupfile = outupfile + "%s\t%s\t%s\t%s\t%s\n" % \
-                        (id_db,id,string.atoi(begin)-string.atoi(flank),\
+                        (id_db,id,int(begin)-int(flank),\
                         coorend,strand)
                 elif coorend != '' and flank != '':
                     outupfile = outupfile + "%s\t%s\t%s\t%s\t%s\n" % \
                         (id_db,id,begin,\
-                        string.atoi(coorend)+string.atoi(flank),strand)
+                        int(coorend)+int(flank),strand)
                 else:
                     outupfile = outupfile + "%s\t%s\t%s\t%s\t%s\n" % \
                         (id_db,id,begin,coorend,strand)
@@ -323,11 +339,10 @@ Please specify the sequence you wish to retrieve by only one method.''')
 
             # Remove full path from display...  
             if 'GENOMIC_PATH' in config :
-                genomesequence = regsub.gsub(config['GENOMIC_PATH'],
-                    '',genomesequence) 
-
+                genomesequence = genomesequence.replace(config['GENOMIC_PATH'], '')
     except:
         raise ToFASTACGI.error('Error in retrieving genome build sequences.')
+    log.write('Finished with genome build sequences')
 
     # Retrieve Non-Genome Build Sequences
     try:
@@ -340,11 +355,12 @@ Please specify the sequence you wish to retrieve by only one method.''')
                         
     except Exception as message:
         raise ToFASTACGI.error('Error in retrieving sequences.\n' + message)
+    log.write('Finished with Emboss sequences')
 
     if embosssequence == "":
         sequence = genomesequence
     else:
-        sequence = string.rstrip(embosssequence) + "\n" + genomesequence
+        sequence = embosssequence.rstrip() + "\n" + genomesequence
 
     # Retrieve strain gene sequences from MouseMine
     mmFasta = ''
@@ -369,6 +385,7 @@ Please specify the sequence you wish to retrieve by only one method.''')
 
         except:
             mmFailed = 'Retrieval from MouseMine failed (%s): %s' % (ids, str(sys.exc_info()[1]))
+    log.write('Finished with MouseMine sequences')
 
     # error reporting
     
@@ -398,20 +415,21 @@ def separateInputFile(upfile):
     genomeupfile = ''
     mousemineFile = ''
 
-    for line in string.split(upfile,'\n'): 
+    for line in upfile.split('\n'): 
         if line != '':
-           tokens = string.split(line,'\t')
+           tokens = line.split('\t')
            if tokens[0] == "mousegenome":
-               genomeupfile = genomeupfile + string.joinfields(tokens,'\t') + '\n'
+               genomeupfile = genomeupfile + '\t'.join(tokens) + '\n'
            elif tokens[0] == 'straingene':
-               mousemineFile = mousemineFile + string.joinfields(tokens,'\t') + '\n'
+               mousemineFile = mousemineFile + '\t'.join(tokens) + '\n'
            else:
-               gcgupfile = gcgupfile + string.joinfields(tokens[:-1],'\t') + '\n'
+               gcgupfile = gcgupfile + '\t'.join(tokens[:-1]) + '\n'
 
     # reset 'empty' list files to make testing elsewhere easier
     if gcgupfile == "..\n":
         gcgupfile = ""
 
+    log.write('Separated input file by data set')
     return gcgupfile,genomeupfile,mousemineFile
 
 def mapToLogicalDB(id_db):
@@ -448,16 +466,16 @@ def cleanInputParms(inputParms):
     flankValueTemplate = '%s'  # used to cast an int flank value back to 
                                # string, for easy modification
     # regular expressions
-    seqReg   = regex.compile('seq[0-9]+')  
-    flankReg = regex.compile('flank[0-9]+')
+    seqReg   = re.compile('seq[0-9]+')  
+    flankReg = re.compile('flank[0-9]+')
 
     cgiKeys  = list(inputParms.keys())
 
     # pull out flanking values from input parms, to be matched to seqN later
     for key in cgiKeys:
-        if flankReg.match(key) != -1:
+        if flankReg.match(key) != None:
             seqParmNum = key[5:]
-            flankValue = flankValueTemplate % (string.atoi(inputParms[key]) * 1000)
+            flankValue = flankValueTemplate % (int(inputParms[key]) * 1000)
 
             flankValues[seqParmNum] = flankValue
 
@@ -466,14 +484,14 @@ def cleanInputParms(inputParms):
 
         # Origional input parameter API spec
         if key == 'seqs':
-            if type(inputParms['seqs']) == bytes:
+            if type(inputParms['seqs']) == type('foo'):
                 seqList.append(inputParms['seqs'])
             else:
                 for seqsValue in inputParms['seqs']:
                     seqList.append(seqsValue)
 
         # matched seqN regex
-        if seqReg.match(key) != -1:
+        if seqReg.match(key) != None:
 
             # since only string parms can have flanking...
             if type(inputParms[key]) == bytes:
@@ -494,5 +512,7 @@ def cleanInputParms(inputParms):
     if upfile != '':
         newInputParms['upfile'] = upfile
 
+    log.write('Cleaned up input parameters')
     return newInputParms
 
+log.write('Initialized tofasta.py library')

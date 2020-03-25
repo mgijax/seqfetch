@@ -95,12 +95,11 @@ class CGI:
                                 default_fields, default_types)
                 else:
                         fs = cgi.FieldStorage()
-                        for key in list(fs.keys()):
+                        for key in fs.keys():
                                 if type(fs[key]) == list:
                                         self.fields[key] = []
                                         for item in fs[key]:
-                                                self.fields[key].append ( \
-                                                        item.value)
+                                                self.fields[key].append (item.value)
                                 else:
                                         self.fields[key] = fs[key].value
                 return self.fields

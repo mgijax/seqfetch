@@ -73,7 +73,27 @@ import sys, http.client, re, string
 from types import *
 import lxml.etree
 import tofastalib
+import log
+import sys
 
+log.write('Initializing EmbossClient')
+
+# returns an exception for message 's' with a module-specific prefi
+def error(s):
+    return Exception("EmbossClient.py error: %s" % s)
+        
+# dictionary to define query strings for each sequence type.
+# the key is the sequence type, and the value is a list of query 
+# strings that the id will be inserted into.  the query strings are   
+# in database:id format. queries will be run in the order defined.
+databases = {"Sequence DB":["genbank:%s", "tpa:%s"],
+    "RefSeq":["refseqProt:%s", "refseqRna:%s"],
+        "SWISS-PROT":["sprot:%s"],
+    "TrEMBL":["tr:%s"],
+    "ensembl_mus_prot":["ensembl_mus_prot:%s"],
+    "ensembl_mus_cdna":["ensembl_mus_cdna:%s"]
+    }
+        
 class EmbossClient:
         """
         This class acts as a web services client to the soaplab2 installation
@@ -84,24 +104,6 @@ class EmbossClient:
         instantiated getSequences can be called with a list of sequence ids to
         fetch from EMBOSS
         """
-        
-        # error string template for missing sequences message
-        missing_seq = "Sequence %s not found"
-        
-        # error identifier
-        error = "EmbossClient.py error"
-        
-        # dictionary to define query strings for each sequence type.
-        # the key is the sequence type, and the value is a list of query 
-        # strings that the id will be inserted into.  the query strings are    
-        # in database:id format. queries will be run in the order defined.
-        databases = {"Sequence DB":["genbank:%s", "tpa:%s"], \
-                "RefSeq":["refseqProt:%s", "refseqRna:%s"], \
-                "SWISS-PROT":["sprot:%s"], \
-                "TrEMBL":["tr:%s"], \
-                "ensembl_mus_prot":["ensembl_mus_prot:%s"],
-                "ensembl_mus_cdna":["ensembl_mus_cdna:%s"],
-                }
         
         def __init__(self, config):
                 """
@@ -114,11 +116,17 @@ class EmbossClient:
                 # Effects: nothing
                 # Throws: nothing
                 
+                sys.stderr.write('HERE\n')
+                sys.stderr.flush()
+                sys.stderr.write('EMBOSS_HOST: %s\n' % config.lookup('EMBOSS_HOST'))
+                sys.stderr.flush()
+                log.write('Initializing HTTPConnection for %s' % str(config.lookup('EMBOSS_HOST')))
                 if config:
                         self.config = config
                 
                 # instantiate web service client
-                self.webservice = http.client.HTTP( self.config.lookup('EMBOSS_HOST') )
+                self.webservice = http.client.HTTPConnection(str(self.config.lookup('EMBOSS_HOST')))
+                log.write('Initialized HTTPConnection')
                 
                 return
         
@@ -212,9 +220,9 @@ class EmbossClient:
                                 
                                 # lookup sequence type to get corresponding query strings
                                 # insert id into query string and store in a list
-                                if id_db in self.databases:
+                                if id_db in databases:
                                         seq = []   # list to hold formatted query strings                                       
-                                        for db in self.databases[id_db]:                                                
+                                        for db in databases[id_db]:                                                
                                                 seq.append(db % id)     
                                         list.append(seq)
                                 
@@ -231,7 +239,7 @@ class EmbossClient:
                 
                 # raise error if no sequence ids detected
                 if len(list) == 0:
-                        raise self.error('All sequences missing')
+                        raise error('All sequences missing')
                 
                 # return list of formatted query strings
                 return list
@@ -276,7 +284,7 @@ class EmbossClient:
                 # communication error, log error and raise to caller
                 except Exception as inst:
                         tofastalib.writeToErrorLog (inst, self.config)
-                        raise self.error('Unable to connect to EMBOSS server.')
+                        raise error('Unable to connect to EMBOSS server.')
                 
                 return
         
@@ -343,7 +351,7 @@ class EmbossClient:
                         # soaplab returned a fault, log and raise error
                         message = 'EMBOSS Server error: ' + fault[0].text
                         tofastalib.writeToErrorLogDebug (message, self.config)
-                        raise self.error(message)
+                        raise error(message)
         
         
         def getSequences(self, 
@@ -378,8 +386,10 @@ class EmbossClient:
                                                 tofastalib.writeToErrorLogDebug ('Sequence %s not found' % message, self.config)
                                                 missing.append( message )
                         
-                except self.error as message:
-                        raise self.error('' + message)
+                except Exception as message:
+                        raise error('' + str(message))
                 
                 # return results
                 return '%s' % '\n'.join(replies), '%s\n' % ','.join(missing)
+
+log.write('Initialized EmbossClient')
