@@ -354,7 +354,7 @@ Please specify the sequence you wish to retrieve by only one method.''')
                                         "to find these sequences:\n%s" % failedembossseqs
                         
     except Exception as message:
-        raise ToFASTACGI.error('Error in retrieving sequences.\n' + message)
+        raise ToFASTACGI.error('Error in retrieving sequences.\n' + str(message))
     log.write('Finished with Emboss sequences')
 
     if embosssequence == "":
@@ -452,7 +452,7 @@ def cleanInputParms(inputParms):
 # Purpose: Convert multiple APIs to have same input naming convention
 #   Detail page javaScript requires we use more than the 'seqs' parms.
 #   seq(n) is now valid, where n is any number (e.g. seq1, seq2, seq3)
-#   If a flank(n) parameter is passed, it is appended to coorisponding
+#   If a flank(n) parameter is passed, it is appended to corresponding
 #   seq(n)
 # Returns: dictionary; like self parms, with seq(n) values now in
 #   the seqs parameter 
@@ -479,12 +479,14 @@ def cleanInputParms(inputParms):
 
             flankValues[seqParmNum] = flankValue
 
+    stringType = type('foo')
+    
     # gather all values seqN parameter
     for key in cgiKeys:
 
-        # Origional input parameter API spec
+        # Original input parameter API spec; convert value to be a list of strings (if not already)
         if key == 'seqs':
-            if type(inputParms['seqs']) == type('foo'):
+            if type(inputParms['seqs']) == stringType:
                 seqList.append(inputParms['seqs'])
             else:
                 for seqsValue in inputParms['seqs']:
@@ -494,7 +496,7 @@ def cleanInputParms(inputParms):
         if seqReg.match(key) != None:
 
             # since only string parms can have flanking...
-            if type(inputParms[key]) == bytes:
+            if type(inputParms[key]) == stringType:
 
                 # Determine if this parameter needs flank appended
                 if key[3:] in list(flankValues.keys()):
@@ -503,7 +505,7 @@ def cleanInputParms(inputParms):
                     seqList.append(inputParms[key])
 
         if key == "upfile":
-            upfile = inputParms[key]
+            upfile = inputParms[key].decode()
 
     newInputParms = {}
 

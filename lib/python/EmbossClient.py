@@ -210,7 +210,7 @@ class EmbossClient:
                         "([A-Za-z0-9_\.\-]+)\t*([0-9]*)\t*([0-9]*)")
                 
                 # parse list of request ids
-                for line in string.split(tablist,'\n'):
+                for line in tablist.split('\n'):
                         # get matches to regular expression
                         match = tablistre.match(line)
                         
@@ -273,10 +273,8 @@ class EmbossClient:
                                 self.webservice.send(req)
                                 
                                 # get the response from the web service and parse the reply
-                                statuscode, statusmessage, header = self.webservice.getreply()
-                                f = self.webservice.getfile()
-                                seq = self.__parseReply(lxml.etree.parse(f))
-                                f.close()
+                                response = self.webservice.getresponse()
+                                seq = self.__parseReply(lxml.etree.parse(response))
                                 
                                 # return first sequence found
                                 if seq:
@@ -284,7 +282,7 @@ class EmbossClient:
                 # communication error, log error and raise to caller
                 except Exception as inst:
                         tofastalib.writeToErrorLog (inst, self.config)
-                        raise error('Unable to connect to EMBOSS server.')
+                        raise error('Unable to connect to EMBOSS server.  (%s)' % str(inst))
                 
                 return
         
@@ -302,12 +300,12 @@ class EmbossClient:
                                 newseq = newseq + '\n'
                 
                 
-                lines = string.split (seq, '\n')[1:]
-                lengths = list(map (len, list(map (string.strip, lines))))
+                lines = list(seq.split('\n'))[1:]
+                lengths = list(map (len, list(map (lambda x: x.strip(), lines))))
                 sum = 0
                 for i in lengths:
                         sum = sum + i
-                tofastalib.writeToErrorLog (string.split (newseq, '\n')[1:], self.config)
+                tofastalib.writeToErrorLog (list(newseq.split('\n'))[1:], self.config)
                 tofastalib.writeToErrorLog (sum, self.config)
                 
                 return newseq
