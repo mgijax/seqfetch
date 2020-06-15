@@ -41,30 +41,20 @@ import sys
 if '.' not in sys.path:
     sys.path.insert (0, '.')
 
-sys.stderr.write('start')
-sys.stderr.flush()
-
 # add the MGI standard library directory to the PythonPath so that we can find
 # the standard Configuration.py modules:
 MGI_LIBS = '/usr/local/mgi/live/lib/python'
 if MGI_LIBS not in sys.path:
     sys.path.insert (0, MGI_LIBS)
 
-sys.stderr.write('updated path')
-sys.stderr.flush()
-
 #################
 # configuration #
 #################
 
 import log
-log.on()
-
-sys.stderr.write('configured log.py')
-sys.stderr.flush()
+log.off()
 
 import Configuration
-sys.stderr.write('configured Configuration.py')
 log.write('Loaded Configuration module')
 
 # Instantiating a Configuration object will adjust our python path 
@@ -72,8 +62,6 @@ log.write('Loaded Configuration module')
 # This helps us find other MGI libraries (including those for ToFASTA).
 
 config = Configuration.get_Configuration ('Configuration', 1)
-sys.stderr.write('Received config file')
-sys.stderr.flush()
 log.write('Received config file')
 
 import tofasta

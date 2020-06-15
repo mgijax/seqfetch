@@ -10,7 +10,6 @@
 #    None
 # Private Functions:
 #    parseParameters(params)
-#    separateInputFile(upfile)
 # Public Classes:
 #    ToFASTACGI
 # Sample Usage:
@@ -94,10 +93,6 @@ class ToFASTACGI (CGInocontenttype.CGI):
 
         parms = self.get_parms()
         
-        # convert uploaded bytes to a Python string
-        if 'upfile' in parms:
-            parms['upfile'] = parms['upfile'].decode()
-
         log.write('Got parameters:')
         for k in parms.keys():
             log.write('- %s: %s' % (k, str(parms[k])))
@@ -164,9 +159,6 @@ def parseParameters (
     begin = ''
     finish = ''
     strand = '+'
-    upfile = ''
-    genomesequence = ''
-    embosssequence = ''
     sequence = ''
     debug = ''
     inputSeqList = []
@@ -179,28 +171,17 @@ def parseParameters (
     # check the parameters for error conditions and raise an exception
     # if any are found
 
-    if not ('upfile' in parms or 'seqs' in parms):
+    if ('seqs' not in parms) or (parms['seqs'] == ''):
         raise ToFASTACGI.error('''Please select at least one sequence.
 
 To make a selection, click the Back button, click the checkbox next to each desired
 sequence, and then download in FASTA format.''')
-
-    if 'upfile' in parms and 'seqs' in parms:
-        if parms['upfile'] == '' and parms['seqs'] == '':
-            raise ToFASTACGI.error('''Input to Sequence Retrieval Tool incorrect.
-You have to enter a sequence specification or upload a file.  Both are empty.''')
-        elif parms['upfile'] != '' and parms['seqs'] != '':
-            raise ToFASTACGI.error('''Input to Sequence Retrieval Tool incorrect.
-You have entered both a sequence specification and uploaded a file.
-Please specify the sequence you wish to retrieve by only one method.''')
 
     # fill in values from the submitted parameters
 
     if 'seqs' in parms:
         seqs = parms['seqs']
         log.write('seqs: %s' % seqs)
-    if 'returnErrors' in parms:
-        returnerrors = parms['returnErrors'].strip()
     if 'debug' in parms:
         debug = parms['debug'].strip()
 
@@ -232,63 +213,12 @@ Please specify the sequence you wish to retrieve by only one method.''')
                     errors.append('Error retrieving %s : %s' % (seqitem, message))
 
     # error reporting
-    
     if errors:
         print("*****\n" + \
               "An error occurred while trying to retrieve your " + \
               "sequence(s).\n-----\n%s\n*****" % '\n'.join(errors))
         
     return ''.join(outputSequences),debug
-
-
-def separateInputFile(upfile):
-
-    # Purpose: Parse the list of sequences to retrieve and separate
-    #       that list in sequences that are from the NCBI genome
-    #       build or not, and convert to GCG list files.
-    # Returns: Three lists of sequences:
-    #    1. sequences to retrieve from NCBI genome build
-    #    2. sequences to retrieve from elsewhere (i.e., GCG)
-    #    3. sequences to retrieve from MouseMine (strain gene sequences) 
-    # Assumes: nothing
-    # Effects: nothing
-    # Throws:  nothing
-
-    gcgupfile = '..\n'
-    genomeupfile = ''
-    mousemineFile = ''
-
-    for line in upfile.split('\n'): 
-        if line != '':
-           tokens = line.split('\t')
-           if tokens[0] == "mousegenome":
-               genomeupfile = genomeupfile + '\t'.join(tokens) + '\n'
-           elif tokens[0] == 'straingene':
-               mousemineFile = mousemineFile + '\t'.join(tokens) + '\n'
-           else:
-               gcgupfile = gcgupfile + '\t'.join(tokens[:-1]) + '\n'
-
-    # reset 'empty' list files to make testing elsewhere easier
-    if gcgupfile == "..\n":
-        gcgupfile = ""
-
-    log.write('Separated input file by data set')
-    return gcgupfile,genomeupfile,mousemineFile
-
-def mapToLogicalDB(id_db):
-
-    if id_db == "genbank":
-        id_db = "Sequence DB"
-    elif id_db == "refseq":
-        id_db = "RefSeq"
-    elif id_db == "swissprot":
-        id_db = "SWISS-PROT"
-    elif id_db == "trembl":
-        id_db = "TrEMBL"
-    elif id_db == "sptrembl":
-        id_db = "SWISS-PROT"
-
-    return id_db
 
 ###--------------------------------------------------------------------###
 def cleanInputParms(inputParms):
@@ -304,7 +234,6 @@ def cleanInputParms(inputParms):
 # Throws:  Nothing
 
     seqList     = []           # list of strings to become new seqs parm
-    upfile      = ''
     flankValues = {}           # temp holding for flank values
     flankValueTemplate = '%s'  # used to cast an int flank value back to 
                                # string, for easy modification
@@ -347,15 +276,10 @@ def cleanInputParms(inputParms):
                 else:
                     seqList.append(inputParms[key])
 
-        if key == "upfile":
-            upfile = inputParms[key].decode()
-
     newInputParms = {}
 
     if seqList != []:
         newInputParms['seqs'] = seqList
-    if upfile != '':
-        newInputParms['upfile'] = upfile
 
     log.write('Cleaned up input parameters')
     return newInputParms
