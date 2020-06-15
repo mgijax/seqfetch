@@ -60,3 +60,9 @@ MAX_SEQS 1000
 # python formatted string representing the file format of the chromosome files
 # The %s is a chromosome number, X, Y, or M 
 NIB_FILE_FORMAT chr%s.nib
+
+# default genome build identifier
+GENOME_BUILD GRCm38.p6
+
+# default mouse strain
+MOUSE_STRAIN C57BL/6J
