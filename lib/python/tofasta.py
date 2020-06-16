@@ -208,7 +208,7 @@ sequence, and then download in FASTA format.''')
 
             for seqitem in inputSeqList:
                 try:
-                    outputSequences.append(fetcher.fetch(seqitem))
+                    outputSequences.append(fetcher.fetch(seqitem).replace('\n\n', '\n'))
                 except Exception as message:
                     errors.append('Error retrieving %s : %s' % (seqitem, message))
 

@@ -6,6 +6,7 @@ import sys
 from urllib.request import urlopen
 from urllib.parse import urlencode
 import json
+import time
 
 # default values for build and strain (can override)
 genomeBuild = 'GRCm38.p6'
@@ -82,7 +83,49 @@ class UniprotFetcher (SequenceFetcher) :
 
 # Is a SequenceFetcher for reading from the Entrez resource at NCBI.
 class EntrezFetcher (SequenceFetcher) :
-    BASEURL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=%s&rettype=fasta&retmode=text"
+    # system time when the nextrequest from Entrez will be allowed (must have no more than 3 per second)
+    # Note: This is a static variable, so it is shared across instances of this class.
+    nextRequestTime = time.time()
+
+    # number of seconds to wait between Entrez requests, ensuring we don't hit them too quickly
+    timeDelay = 0.35
+    
+    # ordering of databases for nucleotide sequences (some sequences are in one, some in another)
+    nucleotideDbs = [ 'nuccore', 'nucest', 'nucgss', 'popset', 'protein' ]
+
+    # ordering of databases for proteine sequences (some sequences are in one, some in another)
+    proteinDbs = [ 'protein', 'popset', 'nuccore', 'nucest', 'nucgss']
+
+    BASEURL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=<<db>>&id=%s&rettype=fasta&retmode=text"
+    
+    def fetchById(self, id):
+        # override the superclass method to have two pieces of Entrez-specific functionality:
+        #    1. no more than 3 requests per second
+        #    2. when we fail to get a sequence from one database, fall back and try the next (because some
+        #        sequences are in one, some in another, etc.)
+
+        if (id == None) or (len(id) < 2):
+            raise Exception('Unrecognized ID "%s" (too short)' % str(id))
+        
+        dbs = self.nucleotideDbs
+        if id[1].upper() == 'P':
+            dbs = self.proteinDbs
+        
+        for db in dbs:
+            now = time.time()
+            if (now < self.nextRequestTime):
+                time.sleep(self.nextRequestTime - now)
+            
+            self.nextRequestTime = now + self.timeDelay
+
+            try:
+                seq = self._fetch(self.BASEURL.replace('<<db>>', db) % id)
+                if (seq != None) and (seq.strip() != ''):
+                    return seq
+            except:
+                pass
+
+        raise Exception('Could not find sequence ID %s' % id)
 
 # Is a SequenceFetcher for reading from the Ensembl resource.
 class EnsemblFetcher (SequenceFetcher) :
