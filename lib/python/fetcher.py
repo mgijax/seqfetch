@@ -11,6 +11,7 @@ import time
 # default values for build and strain (can override)
 genomeBuild = 'GRCm38.p6'
 mouseStrain = 'C57BL/6J'
+apiKey = ''
 
 ###--- functions ---###
 
@@ -24,6 +25,12 @@ def setMouseStrain(strain):
     # set the module's mouse strain
     global mouseStrain
     mouseStrain = strain
+    return
+
+def setApiKey(myApiKey):
+    # set the API key that this module should use for NCBI communication
+    global apiKey
+    apiKey = myApiKey
     return
 
 ###--- classes ---###
@@ -87,8 +94,9 @@ class EntrezFetcher (SequenceFetcher) :
     # Note: This is a static variable, so it is shared across instances of this class.
     nextRequestTime = time.time()
 
-    # number of seconds to wait between Entrez requests, ensuring we don't hit them too quickly
-    timeDelay = 0.35
+    # number of seconds to wait between Entrez requests, ensuring we don't hit them too quickly (when using
+    # an API key, we have a limit of 10 per second, across all seqfetch processes)
+    timeDelay = 0.20        # allow roughly 5 attempts per second
     
     # ordering of databases for nucleotide sequences (some sequences are in one, some in another)
     nucleotideDbs = [ 'nuccore', 'nucest', 'nucgss', 'popset', 'protein' ]
@@ -96,7 +104,7 @@ class EntrezFetcher (SequenceFetcher) :
     # ordering of databases for proteine sequences (some sequences are in one, some in another)
     proteinDbs = [ 'protein', 'popset', 'nuccore', 'nucest', 'nucgss']
 
-    BASEURL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=<<db>>&id=%s&rettype=fasta&retmode=text"
+    BASEURL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=<<db>>&id=%s&rettype=fasta&retmode=text&api_key=<<apiKey>>"
     
     def fetchById(self, id):
         # override the superclass method to have two pieces of Entrez-specific functionality:
@@ -119,7 +127,7 @@ class EntrezFetcher (SequenceFetcher) :
             self.nextRequestTime = now + self.timeDelay
 
             try:
-                seq = self._fetch(self.BASEURL.replace('<<db>>', db) % id)
+                seq = self._fetch(self.BASEURL.replace('<<db>>', db).replace('<<apiKey>>', apiKey) % id)
                 if (seq != None) and (seq.strip() != ''):
                     return seq
             except:

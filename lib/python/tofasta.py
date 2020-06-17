@@ -49,6 +49,8 @@ if config.has_key('GENOME_BUILD'):
     fetcher.setGenomeBuild(config.get('GENOME_BUILD'))
 if config.has_key('MOUSE_STRAIN'):
     fetcher.setMouseStrain(config.get('MOUSE_STRAIN'))
+if config.has_key('SEQFETCH_API_KEY'):
+    fetcher.setApiKey(config.get('SEQFETCH_API_KEY'))
     
 maxSeqs = 1000
 if config.has_key('MAX_SEQS'):
