@@ -139,6 +139,10 @@ class EntrezFetcher (SequenceFetcher) :
 class EnsemblFetcher (SequenceFetcher) :
     BASEURL = "http://rest.ensembl.org/sequence/id/%s?content-type=text/x-fasta"
 
+# Is a SequenceFetcher for reading from the Ensembl resource.  (for CDNA sequences)
+class EnsemblCdnaFetcher (SequenceFetcher) :
+    BASEURL = "http://rest.ensembl.org/sequence/id/%s?type=cdna&content-type=text/x-fasta"
+
 # Is a SequenceFetcher for reading from the MouseMine resource at MGI.
 class MouseMineFetcher (SequenceFetcher) :
     BASEURL = "http://www.mousemine.org/mousemine/service/"
@@ -192,7 +196,7 @@ type2class = {
     "sptrembl"  : UniprotFetcher,
     "genbank"   : EntrezFetcher,
     "refseq"    : EntrezFetcher,
-    "ensembl_mus_cdna" : EnsemblFetcher,
+    "ensembl_mus_cdna" : EnsemblCdnaFetcher,
     "ensembl_mus_prot" : EnsemblFetcher,
     "straingene" : MouseMineFetcher,
     "mousegenome" : MouseMineFetcher,
