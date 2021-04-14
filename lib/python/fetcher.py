@@ -9,7 +9,7 @@ import json
 import time
 
 # default values for build and strain (can override)
-genomeBuild = 'GRCm38.p6'
+genomeBuild = 'GRCm39'
 mouseStrain = 'C57BL/6J'
 apiKey = ''
 
