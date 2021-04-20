@@ -8,6 +8,9 @@ from urllib.parse import urlencode
 import json
 import time
 
+import Configuration
+config = Configuration.get_Configuration ('Configuration', 1)
+
 # default values for build and strain (can override)
 genomeBuild = 'GRCm39'
 mouseStrain = 'C57BL/6J'
@@ -145,11 +148,14 @@ class EnsemblCdnaFetcher (SequenceFetcher) :
 
 # Is a SequenceFetcher for reading from the MouseMine resource at MGI.
 class MouseMineFetcher (SequenceFetcher) :
-    BASEURL = "http://www.mousemine.org/mousemine/service/"
+    def getMouseMineUrl(self):
+        if config.has_key('MOUSEMINE_URL'):
+            return "%smousemine/service/" % config.get('MOUSEMINE_URL')
+        return None
 
     def fetchById(self, id):
         # Returns the sequence corresponding to the given seq 'id'.
-        url = self.BASEURL + "query/results/fasta"
+        url = self.getMouseMineUrl() + "query/results/fasta"
         args = {
             'query' : '''
                 <query model="genomic" view="SequenceFeature.primaryIdentifier" >
@@ -163,7 +169,7 @@ class MouseMineFetcher (SequenceFetcher) :
     def fetchByCoordinates (self, build, strain, chrom, start, end, strand, flank = 0) :
         # Returns a slice of the genomic sequence corresponding to the given input parameters.
         # (genome build, strain, chromosome, start coordinate, end coordinate, strand, and the amount of flank to include)
-        url = self.BASEURL + "sequence"
+        url = self.getMouseMineUrl() + "sequence"
         args = {
             'start' : max(0, start - flank - 1),
             'end' : end + flank,
