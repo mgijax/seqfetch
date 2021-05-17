@@ -62,7 +62,7 @@ MAX_SEQS 1000
 NIB_FILE_FORMAT chr%s.nib
 
 # default genome build identifier
-GENOME_BUILD GRCm38.p6
+GENOME_BUILD GRCm39
 
 # default mouse strain
 MOUSE_STRAIN C57BL/6J
