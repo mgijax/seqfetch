@@ -1,15 +1,33 @@
 #!/bin/sh
 
 # Program: Install
-# Purpose: Install script for the Yank Web Interface
+# Purpose: Install script for the Seq Cache product
 # Assumptions: that this script is run from the directory which contains it
-#	(the MouseBLAST WI installation directory)
+
+#
+#  If the MGICONFIG environment variable does not have a local override,
+#  use the default "live" settings.
+#
+if [ "${MGICONFIG}" = "" ]
+then
+    MGICONFIG=/usr/local/mgi/live/mgiconfig
+    export MGICONFIG
+fi
+
+. ${MGICONFIG}/master.config.sh
 
 ###--- Global Variables ---###
 
 TOP=`pwd`
 INSTALL_LOG=$TOP/logs/Install.log
-USAGE="Usage: $0 <full path to Configuration.py>\n"
+CONFIGURATION=Configuration
+
+###--- Config setup and reading of non-include parameters --------###
+if test ! -r $CONFIGURATION
+then
+    echo "Missing configuration file.  Please create $CONFIGURATION."
+    exit 1
+fi
 
 ###--- Functions ---###
 
@@ -56,49 +74,6 @@ errorExit() {
 	exit 1
 }
 trap "errorExit $INSTALL_LOG" 1 2 3 12 13 15
-
-checkDirectory() {
-	# Purpose: checks to see that we are executing this script from the
-	#	directory in which it lives
-	# Returns: nothing
-	# Assumes: nothing
-	# Effects: prints a message to stdout and exits the script if we are
-	#	not in the directory containing this script
-	# Throws: nothing
-
-	if [ `dirname $0` != . ]; then
-		filename=`basename $0`
-		errorExit "$filename must be run from same directory."
-	fi
-}
-
-checkGroup() {
-	# Purpose: check to see if the current user is a member of the group
-	#	specified in $1, using the temp directory specified in $2
-	#	to check it
-	# Returns: nothing
-	# Assumes: nothing
-	# Effects: logs a message and exits the script if the group test fails
-	# Throws: nothing
-
-	tempfile=$2/tempfile
-	touch $tempfile
-	chgrp $1 $tempfile || errorExit "You are not a member of group $1"
-	rm -f $tempfile
-}
-
-succeeded() {
-	# Purpose: log a final message before the script terminates
-	# Returns: nothing
-	# Assumes: nothing
-	# Effects: see log() function's Effects
-	# Throws: nothing
-	# Notes: We trap the signal 0 so that this is always called as the
-	#	script exits.
-
-	log "bye bye..."
-}
-trap "succeeded" 0
 
 execute() {
 	# Purpose: log and then execute the command passed in as parameters
@@ -172,46 +147,7 @@ fi
 
 logHeading "Beginning Installation" "`date`"
 
-log "Checking command-line..."
-checkDirectory			# ensure that we're running Install in './'
-
-# Check that the user specified the location of the configuration module,
-# that it is executable, and that a Configuration file is readable.
-
-if [ $# -ne 1 ]; then
-	errorExit "$USAGE"
-fi
-if [ "`basename $1`" != "Configuration.py" ]; then
-	errorExit "$USAGE"
-fi
-if [ ! -x $1 ]; then
-	errorExit "$1 is not executable"
-fi
-if [ ! -r Configuration ]; then
-	errorExit "The Configuration file is missing"
-fi
-
-# use the configuration module to parse our Configuration file and import
-# those variables to this script.  Notably, this is where we define:
-#	$PYTHON
-#	$UMASK
-#	$ERROR_LOG
-#	$USAGE_LOG
-#	$GROUP
-#	$HOMEPAGE
-
-logHeading "Getting Configuration options..."
-CONFIG=/tmp/$$.config
-$1 ./Configuration sh > $CONFIG 2>/dev/null
-. $CONFIG
-rm -f $CONFIG
-
-execute umask $UMASK		# set the proper umask
-checkGroup $GROUP $TMPDIR	# ensure that the user is a member of $GROUP
-
 # Create several directories which may not be part of the source checked out
-# from CVS
-
 logHeading "Creating directories..."
 for dir in ./bin ./www/include ./admin/tmp ./logs
 do
@@ -221,7 +157,6 @@ do
 done
 
 # Create a link to the Python interpreter from the bin/ directory
-
 logHeading "Linking to the Python interpreter..."
 cd bin
 reLink $PYTHON python
@@ -229,7 +164,6 @@ cd $TOP
 
 # Create the usage and error logs if they don't already exist and set them
 # to be world-writeable (so the web server can log to them)
-
 logHeading "Setting up log files..."
 for file in $ERROR_LOG $USAGE_LOG
 do
@@ -241,7 +175,6 @@ done
 
 # Create links to the configuration module and to the Python interpreter
 # in directories where we need to run Python scripts.
-
 logHeading "Creating links for Python scripts to use..."
 for dir in admin www
 do
@@ -253,14 +186,12 @@ do
 done
 
 # Compile the Python libraries for this product
-
 logHeading "Compiling the Python libraries..."
 cd lib/python
 compilePythonLibs $PYTHON
 cd $TOP
 
 # Make sure that all files are owned by $GROUP
-
 logHeading "Changing file and directory ownerships..."
 execute find . \( -type f -o -type d \) -exec chgrp $GROUP '{}' \;
 
