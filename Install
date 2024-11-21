@@ -122,23 +122,6 @@ reLink() {
 	execute ln -s $1 $2
 }
 
-compilePythonLibs() {
-	# Purpose: compiles all Python libraries in the current directory,
-	#	expecting the path to the Python interpreter in $1
-	# Returns: nothing
-	# Assumes: nothing
-	# Effects: removes any existing .pyc files, and creates a new one for
-	#	each .py file in the current directory
-	# Throws: nothing
-
-	for file in `ls *pyc`
-	do
-		log "Removing old file: $file"
-		execute rm -f $file
-	done
-	$1 -c 'import compileall; compileall.compile_dir(".")'
-}
-
 ###--- Main Program ---###
 
 if [ -r $INSTALL_LOG ]; then
@@ -188,7 +171,8 @@ done
 # Compile the Python libraries for this product
 logHeading "Compiling the Python libraries..."
 cd lib/python
-compilePythonLibs $PYTHON
+rm -rf *pyc
+$PYTHON -c 'import compileall; compileall.compile_dir(".")'
 cd $TOP
 
 # Make sure that all files are owned by $GROUP
